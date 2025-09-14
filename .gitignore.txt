@@ -1,0 +1,19 @@
+# Archivos temporales de Visual Studio
+.vs/
+*.vsidx
+
+# Archivos de sistema
+Thumbs.db
+.DS_Store
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Logs
+*.log
+
+# Entornos
+.env
+.env.local
