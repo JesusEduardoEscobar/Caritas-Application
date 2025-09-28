@@ -37,5 +37,8 @@ namespace Backend.Controllers
                 return StatusCode(500, $"❌ Error de conexión: {ex.Message}");
             }
         }
+
+        [HttpGet("show-tables")]
+        public async Task<>
     }
 }

@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using Backend.Infrastructure.Database;
+﻿using Backend.Infrastructure.Database;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.NewFolder.Logic
 {
@@ -18,16 +17,16 @@ namespace Backend.NewFolder.Logic
                     var canConnect = await context.Database.CanConnectAsync();
                     if (canConnect)
                     {
-                        return Ok("✅ Conexión a la base de datos exitosa");
+                        return Ok("Conexión a la base de datos exitosa");
                     }
                     else
                     {
-                        return StatusCode(500, "❌ No se pudo conectar a la base de datos");
+                        return StatusCode(500, "No se pudo conectar a la base de datos");
                     }
                 }
                 catch (Exception ex)
                 {
-                    return StatusCode(500, $"❌ Error de conexión: {ex.Message}");
+                    return StatusCode(500, $"Error de conexión: {ex.Message}");
                 }
             }
         }
