@@ -9,7 +9,6 @@ interface QRScannerProps {
   onCodeScanned: (code: string) => void;
 }
 
-
 export function QRScanner({ onBack, onCodeScanned }: QRScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [lastScanned, setLastScanned] = useState<string>('');
@@ -63,18 +62,15 @@ export function QRScanner({ onBack, onCodeScanned }: QRScannerProps) {
   useEffect(() => {
     return () => stopCamera();
   }, []);
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-
-          <h1 className="text-xl">Escáner QR - Confirmación de Reservas</h1>
-        </div>
 
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Scan className="h-5 w-5" />
+              <Scan className="h-5 w-5 text-center" />
               Cámara
             </CardTitle>
           </CardHeader>
