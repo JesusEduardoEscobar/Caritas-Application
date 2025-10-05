@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ArrowLeft, Camera, Scan } from 'lucide-react';
+import QrScanner from 'qr-scanner';
 
 interface QRScannerProps {
   onBack: () => void;
@@ -12,15 +13,33 @@ export function QRScanner({ onBack, onCodeScanned }: QRScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [lastScanned, setLastScanned] = useState<string>('');
   const videoRef = useRef<HTMLVideoElement>(null);
+  const scannerRef = useRef<QrScanner | null>(null);
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
       });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
+
+        scannerRef.current = new QrScanner(
+          videoRef.current,
+          result => {
+            if (result.data !== lastScanned) {
+              setLastScanned(result.data);
+              onCodeScanned(result.data);
+            }
+          },
+          {
+            returnDetailedScanResult: true,
+            highlightScanRegion: true,
+            highlightCodeOutline: true
+          }
+        );
+
+        scannerRef.current.start();
         setIsScanning(true);
       }
     } catch (error) {
@@ -29,18 +48,15 @@ export function QRScanner({ onBack, onCodeScanned }: QRScannerProps) {
   };
 
   const stopCamera = () => {
+    if (scannerRef.current) {
+      scannerRef.current.stop();
+      scannerRef.current.destroy();
+    }
     if (videoRef.current?.srcObject) {
       const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
       tracks.forEach(track => track.stop());
-      setIsScanning(false);
     }
-  };
-
-  // Simulate QR code detection (in real implementation, use a QR library)
-  const simulateQRDetection = () => {
-    const mockQRCode = `RESERVA-${Date.now()}`;
-    setLastScanned(mockQRCode);
-    onCodeScanned(mockQRCode);
+    setIsScanning(false);
   };
 
   useEffect(() => {
@@ -50,17 +66,11 @@ export function QRScanner({ onBack, onCodeScanned }: QRScannerProps) {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-md mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={onBack}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl">Escáner QR - Confirmación de Reservas</h1>
-        </div>
 
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Scan className="h-5 w-5" />
+              <Scan className="h-5 w-5 text-center" />
               Cámara
             </CardTitle>
           </CardHeader>
@@ -90,9 +100,6 @@ export function QRScanner({ onBack, onCodeScanned }: QRScannerProps) {
                 <>
                   <Button onClick={stopCamera} variant="secondary" className="flex-1">
                     Detener Cámara
-                  </Button>
-                  <Button onClick={simulateQRDetection} className="flex-1">
-                    Simular Escáneo
                   </Button>
                 </>
               )}
