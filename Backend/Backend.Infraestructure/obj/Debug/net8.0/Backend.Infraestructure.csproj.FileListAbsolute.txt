@@ -11,3 +11,16 @@ C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Caritas-Application\B
 C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\refint\Backend.Infraestructure.dll
 C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.pdb
 C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\ref\Backend.Infraestructure.dll
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\bin\Debug\net8.0\Backend.Infraestructure.deps.json
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\bin\Debug\net8.0\Backend.Infraestructure.dll
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\bin\Debug\net8.0\Backend.Infraestructure.pdb
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.csproj.AssemblyReference.cache
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.AssemblyInfoInputs.cache
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.AssemblyInfo.cs
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.csproj.CoreCompileInputs.cache
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.sourcelink.json
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.dll
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\obj\Debug\net8.0\refint\Backend.Infraestructure.dll
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.pdb
+C:\GitHub repos\Caritas-App\Backend\Backend.Infraestructure\obj\Debug\net8.0\ref\Backend.Infraestructure.dll
