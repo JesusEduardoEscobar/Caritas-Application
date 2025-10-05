@@ -8,6 +8,7 @@ import { ReservationManagement } from './ReservationManagement';
 import { BedManagement } from './BedManagement';
 import { DashboardStats } from './DashboardStats';
 import { CalendarView } from './CalendarView';
+import { AuthHeader } from './auth/AuthHeader';
 
 interface AdminDashboardProps {
   onActivateQRMode: () => void;
@@ -29,6 +30,7 @@ export function AdminDashboard({ onActivateQRMode, isMobile }: AdminDashboardPro
                 Modo QR
               </Button>
             )}
+            <AuthHeader />
           </div>
         </div>
       </header>
