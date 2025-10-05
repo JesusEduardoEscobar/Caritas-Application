@@ -8,7 +8,7 @@ namespace Backend.Controllers
     /// Controlador para verificar la conectividad con la base de datos.
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]")] 
     public class ConnectionController : ControllerBase
     {
         /// <summary>
@@ -38,7 +38,7 @@ namespace Backend.Controllers
             }
         }
 
-        [HttpGet("show-tables")]
-        public async Task<>
+    //    [HttpGet("show-tables")]
+    //    public async Task<>
     }
 }
