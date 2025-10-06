@@ -1,0 +1,22 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build outputs
+bin/
+obj/
+
+# Logs
+*.log
+
+# Local settings
+**/launchSettings.json
+
+# Databases
+*.db
+*.sqlite
+
+# Otros archivos temporales
+*.tmp
+*.cache
