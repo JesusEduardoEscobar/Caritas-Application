@@ -12,8 +12,10 @@ namespace Backend.Infrastructure.Database
 
         // Ejemplo: tabla Users
         public DbSet<User> Users { get; set; }
-
         public DbSet<Shelter> Shelters { get; set; }
+        public DbSet<Service> Services { get; set; }
+        public DbSet<ShelterService> ShelterServices { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
