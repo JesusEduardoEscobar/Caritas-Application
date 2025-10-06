@@ -11,3 +11,16 @@ C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Caritas-Application\B
 C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\refint\Backend.Infraestructure.dll
 C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.pdb
 C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\ref\Backend.Infraestructure.dll
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\bin\Debug\net8.0\Backend.Infraestructure.deps.json
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\bin\Debug\net8.0\Backend.Infraestructure.dll
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\bin\Debug\net8.0\Backend.Infraestructure.pdb
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.csproj.AssemblyReference.cache
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.AssemblyInfoInputs.cache
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.AssemblyInfo.cs
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.csproj.CoreCompileInputs.cache
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.sourcelink.json
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.dll
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\refint\Backend.Infraestructure.dll
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\Backend.Infraestructure.pdb
+C:\Users\Sistemas\Documents\TECMO\Semestre 5\Bloque\Pagina\Bracnh Jesus\Caritas-Application\Backend\Backend.Infraestructure\obj\Debug\net8.0\ref\Backend.Infraestructure.dll

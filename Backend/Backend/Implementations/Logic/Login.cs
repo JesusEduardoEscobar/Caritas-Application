@@ -3,6 +3,7 @@ using Backend.Infraestructure.Interfaces;
 using Backend.Infrastructure.Database;
 using Backend.Infraestructure.Objects.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata;
 
 namespace Backend.Implementations.Logic
 {
@@ -19,13 +20,23 @@ namespace Backend.Implementations.Logic
         {
             try
             {
+                email = "roberto@gmail.com";
+                password = "12345";
+                if (password == null || email == null)
+                {
+                    return GlobalResponse<IEnumerable<dynamic>>.Fault(
+                        message: "La contraseña o correo no pueden estar vacios.",
+                        errorCode: "401",
+                        data: new List<dynamic>()
+                        );
+                }
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
 
-                if (user == null)
+                if (user == null || !VerifyPassword(password, user.PasswordHash))
                 {
                     return GlobalResponse<IEnumerable<dynamic>>.Fault(
-                        message: "El correro ingresado no esta asociado a ninguna cuenta",
+                        message: "El correro o la contraseña no no son correctos",
                         errorCode: "401",
                         data: new List<dynamic>()
                         );
@@ -76,11 +87,6 @@ namespace Backend.Implementations.Logic
         }
 
         Task<GlobalResponse<IEnumerable<dynamic>>> IUsers.LoginAdmin(string emai, string password)
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<GlobalResponse<IEnumerable<dynamic>>> IUsers.LoginUser(string email, string password)
         {
             throw new NotImplementedException();
         }

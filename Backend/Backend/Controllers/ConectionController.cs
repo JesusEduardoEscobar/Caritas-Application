@@ -45,28 +45,4 @@ namespace Backend.Controllers
             }
         }
     }
-
-
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
-    {
-        private readonly IUsers _userService;
-
-        public AuthController(IUsers userService)
-        {
-            _userService = userService;
-        }
-
-        [HttpPost("login")]
-        [ProducesResponseType(typeof(GlobalResponse<IEnumerable<dynamic>>), 200)]
-        [ProducesResponseType(typeof(GlobalResponse<IEnumerable<dynamic>>), 401)]
-        [ProducesResponseType(typeof(GlobalResponse<IEnumerable<dynamic>>), 500)]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
-        {
-            var response = await _userService.LoginUser(request.Email, request.Password);
-            return StatusCode(int.Parse(response.Code), response);
-        }
-    }
-
 }
