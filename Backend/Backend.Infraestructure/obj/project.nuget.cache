@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "eliVyrK8C8c=",
+  "dgSpecHash": "4kwZwcfzBtY=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj",
+  "projectFilePath": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Bracnh Jesus\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Sistemas\\.nuget\\packages\\microsoft.entityframeworkcore\\8.0.0\\microsoft.entityframeworkcore.8.0.0.nupkg.sha512",
     "C:\\Users\\Sistemas\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\8.0.0\\microsoft.entityframeworkcore.abstractions.8.0.0.nupkg.sha512",
@@ -25,9 +25,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'Npgsql' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-x9vc-6hfv-hg8c",
-      "projectPath": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj",
+      "projectPath": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Bracnh Jesus\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj",
+      "filePath": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Bracnh Jesus\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj",
       "libraryId": "Npgsql",
       "targetGraphs": [
         "net8.0"

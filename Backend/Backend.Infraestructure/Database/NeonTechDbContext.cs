@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Backend.Infraestructure.Objects.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 namespace Backend.Infrastructure.Database
@@ -10,14 +11,6 @@ namespace Backend.Infrastructure.Database
         {
         }
 
-        // Ejemplo: tabla Users
-        public DbSet<User> Users { get; set; }
-    }
-
-    // Entidad de ejemplo
-    public class User
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        public DbSet<Users> Users { get; set; }
     }
 }

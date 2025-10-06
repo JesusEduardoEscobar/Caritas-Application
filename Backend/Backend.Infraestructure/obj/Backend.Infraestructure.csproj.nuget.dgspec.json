@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj": {}
+    "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Bracnh Jesus\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj": {
+    "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Bracnh Jesus\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj",
+        "projectUniqueName": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Bracnh Jesus\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj",
         "projectName": "Backend.Infraestructure",
-        "projectPath": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj",
+        "projectPath": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Bracnh Jesus\\Caritas-Application\\Backend\\Backend.Infraestructure\\Backend.Infraestructure.csproj",
         "packagesPath": "C:\\Users\\Sistemas\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Caritas-Application\\Backend\\Backend.Infraestructure\\obj\\",
+        "outputPath": "C:\\Users\\Sistemas\\Documents\\TECMO\\Semestre 5\\Bloque\\Pagina\\Bracnh Jesus\\Caritas-Application\\Backend\\Backend.Infraestructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
