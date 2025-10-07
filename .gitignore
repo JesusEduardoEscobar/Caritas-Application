@@ -12,4 +12,13 @@
 
 !Backend/Backend/Dtos
 
+!Backend/Backend/Implementations
+
 !Backend/Backend/Program.cs
+
+!Backend\Backend.Infraestructure\Implementations
+
+!Backend\Backend.Infraestructure\Interfaces
+
+!Backend\Backend.Infraestructure\Objects
+

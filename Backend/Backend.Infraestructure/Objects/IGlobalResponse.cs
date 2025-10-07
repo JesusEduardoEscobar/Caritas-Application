@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RVX.ApiConnector.Infraestructure.Objects
+namespace Backend.Infraestructure.Objects
 {
     public interface IGlobalResponse<T>
     {
