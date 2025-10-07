@@ -7,3 +7,9 @@
 /Backend/Backend/bin
 
 /Backend/Backend/obj
+
+!Backend/Backend/Controllers
+
+!Backend/Backend/Dtos
+
+!Backend/Backend/Program.cs
