@@ -8,6 +8,10 @@
 
 /Backend/Backend/obj
 
+/Backend/Backend.Infraestructure/bin
+
+/Backend/Backend.Infraestructure/obj
+
 !Backend/Backend/Controllers
 
 !Backend/Backend/Dtos
@@ -16,9 +20,12 @@
 
 !Backend/Backend/Program.cs
 
-!Backend\Backend.Infraestructure\Implementations
+!Backend/Backend.Infraestructure/Implementations
 
-!Backend\Backend.Infraestructure\Interfaces
+!Backend/Backend.Infraestructure/Interfaces
 
-!Backend\Backend.Infraestructure\Objects
+!Backend/Backend.Infraestructure/Objects
 
+/.vs
+
+/.env
