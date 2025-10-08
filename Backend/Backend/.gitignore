@@ -2,3 +2,8 @@
 *.vsidx
 
 appsettings.json
+
+!Controllers/
+!Dtos/
+!Implementations/
+
