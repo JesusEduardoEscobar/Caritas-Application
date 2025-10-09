@@ -1,9 +1,15 @@
+using Backend.Dtos;
+using Backend.Implementations;
+using Backend.Infraestructure.Implementations;
+using Backend.Infraestructure.Interfaces;
+using Backend.Infraestructure.Models;
 using Backend.Infrastructure.Database;
 using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using Backend.Dtos;
 
 namespace Backend.Controllers
 {
@@ -12,25 +18,56 @@ namespace Backend.Controllers
     public class SheltersController : ControllerBase
     {
         private readonly NeonTechDbContext _context;
+        private readonly IShelters _shelters;
 
-        public SheltersController(NeonTechDbContext context)
+        public SheltersController(NeonTechDbContext context, IShelters shelters)
         {
             _context = context;
+            _shelters = shelters;
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<Shelter>>> GetShelters()
         {
-            var shelters = await _context.Shelters.ToListAsync();
-            return Ok(shelters);
+            try
+            {
+                var response = await _shelters.GetShelters();
+
+                if (response == null || response.Data == null)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("No se encontraron Shelters en la base de datos", "401", null));
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
         }
 
         [HttpGet("{id:int}")]
+        [Authorize]
         public async Task<ActionResult<Shelter>> GetShelter(int id)
         {
-            var shelter = await _context.Shelters.FindAsync(id);
-            if (shelter == null) return NotFound();
-            return Ok(shelter);
+            try
+            {
+                var response = await _shelters.GetShelter(id);
+
+                if (response == null || response.Data == null)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("No se encontraron Shelters en la base de datos", "401", null));
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
         }
 
         [HttpPost()]
@@ -98,7 +135,7 @@ namespace Backend.Controllers
         }
 
         [HttpPatch("{id:int}/coordinates")]
-        public async Task<IActionResult> UpdateShelterCoordinates(int id, [FromBody] CoordinatesDto coords)
+        public async Task<IActionResult> UpdateShelterCoordinates(int id, [FromBody] CoordinatesDto coords, [FromHeader] object header)
         {
             var shelter = await _context.Shelters.FindAsync(id);
             if (shelter == null) return NotFound();

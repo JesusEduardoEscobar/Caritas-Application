@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Backend.Infraestructure.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 namespace Backend.Infrastructure.Database
@@ -19,6 +20,23 @@ namespace Backend.Infrastructure.Database
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.ToTable("users");
+
+                entity.HasKey(s => s.Id);
+
+                entity.Property(s => s.Id).HasColumnName("id");
+                entity.Property(s => s.Name).HasColumnName("name");
+                entity.Property(s => s.Password).HasColumnName("password");
+                entity.Property(s => s.Email).HasColumnName("email");
+                entity.Property(s => s.Age).HasColumnName("age");
+                //entity.Property(s => s.EconomicLevel).HasColumnName("economic_level");
+                entity.Property(s => s.verificate).HasColumnName("verified");
+                //entity.Property(s => s.shelter).HasColumnName("shelter_id");
+                entity.Property(s => s.isAdmin).HasColumnName("role");
+            });
 
             modelBuilder.Entity<Shelter>(entity =>
             {
@@ -65,52 +83,6 @@ namespace Backend.Infrastructure.Database
             }); 
 
         }
-    }
-
-    public class Shelter
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Address { get; set; } = string.Empty;
-        public decimal Latitude { get; set; }
-        public decimal Longitude { get; set; }
-        public string Phone { get; set; } = string.Empty;
-        public int Capacity { get; set; }
-        public string? Description { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public int Occupancy { get; set; }
-    }
-
-    public class Service
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public string? IconKey { get; set; }
-    }
-
-    public class ShelterService
-    {
-        public int ShelterId { get; set; }
-        public int ServiceId { get; set; }
-        public decimal Price { get; set; }
-        public bool IsAvailable { get; set; }
-        public string? Description { get; set; }
-        public int Capacity { get; set; }
-    }
-
-    public class User
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string Password { get; set; }
-        public string Email { get; set; }
-        public int Age { get; set; }
-        public int EconomicLevel { get; set; }
-        public bool verificate { get; set; }
-        public string shelter { get; set; }
-        public bool? isAdmin { get; set; }
-
     }
 
 
