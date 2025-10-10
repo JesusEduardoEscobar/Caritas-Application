@@ -2,28 +2,39 @@ using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Interfaces;
 using Backend.Infraestructure.Models;
 using Backend.Infrastructure.Database;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
 
 namespace Backend.Implementations
 {
-    public class ServicesManager : IServices
+    public class BedsManager : IBeds
     {
         private readonly NeonTechDbContext _context;
 
-        public ServicesManager(NeonTechDbContext context)
+        public BedsManager(NeonTechDbContext context)
         {
             _context = context;
         }
 
         #region GET
 
-        public Task<GlobalResponse<IEnumerable<dynamic>>> GetServices()
+        public Task<GlobalResponse<IEnumerable<dynamic>>> GetBeds()
         {
             throw new NotImplementedException();
         }
 
-        public Task<GlobalResponse<dynamic>> GetService(int id)
+        public Task<GlobalResponse<IEnumerable<dynamic>>> GetAvailableBeds()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<GlobalResponse<IEnumerable<dynamic>>> GetBedsByShelter(int shelterId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<GlobalResponse<IEnumerable<dynamic>>> GetAvailableBedsByShelter(int shelterId)
         {
             throw new NotImplementedException();
         }
@@ -32,7 +43,7 @@ namespace Backend.Implementations
 
         #region POST
 
-        public Task<GlobalResponse<dynamic>> CreateService(Service service)
+        public Task<GlobalResponse<dynamic>> CreateBed(Bed bed)
         {
             throw new NotImplementedException();
         }
@@ -41,7 +52,7 @@ namespace Backend.Implementations
 
         #region PUT
 
-        public Task<GlobalResponse<dynamic>> UpdateService(Service service)
+        public Task<GlobalResponse<dynamic>> UpdateBed(Bed bed)
         {
             throw new NotImplementedException();
         }
@@ -50,17 +61,12 @@ namespace Backend.Implementations
 
         #region PATCH
 
-        public Task<GlobalResponse<dynamic>> UpdateServiceName(int id, string name)
+        public Task<GlobalResponse<dynamic>> UpdateBedNumber(int id, int bedNumber)
         {
             throw new NotImplementedException();
         }
 
-        public Task<GlobalResponse<dynamic>> UpdateServiceDescription(int id, string description)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<GlobalResponse<dynamic>> UpdateServiceIconKey(int id, string iconKey)
+        public Task<GlobalResponse<dynamic>> UpdateBedAvailability(int id, bool isAvailable)
         {
             throw new NotImplementedException();
         }
@@ -69,7 +75,7 @@ namespace Backend.Implementations
 
         #region DELETE
 
-        public Task<GlobalResponse<dynamic>> DeleteService(int id)
+        public Task<GlobalResponse<dynamic>> DeleteBed(int id)
         {
             throw new NotImplementedException();
         }

@@ -61,7 +61,7 @@ namespace Backend.Implementations
 
         #region POST
 
-        public Task<GlobalResponse<dynamic>> RegisterUser(Shelter shelter)
+        public Task<GlobalResponse<dynamic>> CreateShelter(Shelter shelter)
         {
             throw new NotImplementedException();
         }

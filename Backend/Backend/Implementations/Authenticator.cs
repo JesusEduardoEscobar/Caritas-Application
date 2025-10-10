@@ -25,10 +25,9 @@ namespace Backend.Implementations
         {
             try
             {
-                //var user = await _context.Users
-                //    .Where(u => u.Email == email && u.Password == password)
-                //    .FirstOrDefaultAsync();
-                User user = new User { isAdmin = email == "1" ? true : false };
+                var user = await _context.Users
+                    .Where(u => u.Email == email && u.Password == password)
+                    .FirstOrDefaultAsync();
 
                 if (user == null)
                 {
@@ -53,7 +52,8 @@ namespace Backend.Implementations
 
         private string GenerateJwtToken(User user)
         {
-            string role = user.isAdmin ? "Admin" : "User";
+            string role = user.Role.ToString();
+            role = char.ToUpper(role[0]) + role.Substring(1);
 
             var claims = new[] {new Claim(ClaimTypes.Role, role) };
 

@@ -13,6 +13,7 @@ using System;
 
 namespace Backend.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class SheltersController : ControllerBase
@@ -27,7 +28,6 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<Shelter>>> GetShelters()
         {
             try
@@ -49,7 +49,6 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize]
         public async Task<ActionResult<Shelter>> GetShelter(int id)
         {
             try

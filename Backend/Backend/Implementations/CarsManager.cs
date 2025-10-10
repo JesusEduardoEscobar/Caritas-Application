@@ -2,28 +2,39 @@ using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Interfaces;
 using Backend.Infraestructure.Models;
 using Backend.Infrastructure.Database;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
 
 namespace Backend.Implementations
 {
-    public class ServicesManager : IServices
+    public class CarsManager : ICars
     {
         private readonly NeonTechDbContext _context;
 
-        public ServicesManager(NeonTechDbContext context)
+        public CarsManager(NeonTechDbContext context)
         {
             _context = context;
         }
 
         #region GET
 
-        public Task<GlobalResponse<IEnumerable<dynamic>>> GetServices()
+        public Task<GlobalResponse<IEnumerable<dynamic>>> GetCars()
         {
             throw new NotImplementedException();
         }
 
-        public Task<GlobalResponse<dynamic>> GetService(int id)
+        public Task<GlobalResponse<IEnumerable<dynamic>>> GetAvailableCars()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<GlobalResponse<IEnumerable<dynamic>>> GetCarsByShelter(int shelterId)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public Task<GlobalResponse<IEnumerable<dynamic>>> GetAvailableCarsByShelter(int shelterId)
         {
             throw new NotImplementedException();
         }
@@ -32,7 +43,7 @@ namespace Backend.Implementations
 
         #region POST
 
-        public Task<GlobalResponse<dynamic>> CreateService(Service service)
+        public Task<GlobalResponse<dynamic>> CreateCar(Car car)
         {
             throw new NotImplementedException();
         }
@@ -41,7 +52,7 @@ namespace Backend.Implementations
 
         #region PUT
 
-        public Task<GlobalResponse<dynamic>> UpdateService(Service service)
+        public Task<GlobalResponse<dynamic>> UpdateCar(Car car)
         {
             throw new NotImplementedException();
         }
@@ -50,17 +61,7 @@ namespace Backend.Implementations
 
         #region PATCH
 
-        public Task<GlobalResponse<dynamic>> UpdateServiceName(int id, string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<GlobalResponse<dynamic>> UpdateServiceDescription(int id, string description)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<GlobalResponse<dynamic>> UpdateServiceIconKey(int id, string iconKey)
+        public Task<GlobalResponse<dynamic>> UpdateCarShelter(int id, int shelterId)
         {
             throw new NotImplementedException();
         }
@@ -69,7 +70,7 @@ namespace Backend.Implementations
 
         #region DELETE
 
-        public Task<GlobalResponse<dynamic>> DeleteService(int id)
+        public Task<GlobalResponse<dynamic>> DeleteCar(int id)
         {
             throw new NotImplementedException();
         }

@@ -20,6 +20,10 @@ builder.Services.AddScoped<IUsers, Login>();
 builder.Services.AddScoped<IShelters, SheltersManager>();
 builder.Services.AddScoped<IServices, ServicesManager>();
 builder.Services.AddScoped<IShelterServices, ShelterServicesManager>();
+builder.Services.AddScoped<IBeds, BedsManager>();
+builder.Services.AddScoped<IReservations, ReservationsManager>();
+builder.Services.AddScoped<ICars, CarsManager>();
+builder.Services.AddScoped<ITransportRequests, TransportRequestsManager>();
 
 builder.Services.AddAuthentication(options =>
 {

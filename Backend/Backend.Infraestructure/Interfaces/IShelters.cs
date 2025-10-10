@@ -15,7 +15,7 @@
             Task<GlobalResponse<dynamic>> GetShelter(int id);
 
             // Post
-            Task<GlobalResponse<dynamic>> RegisterUser(Shelter shelter);
+            Task<GlobalResponse<dynamic>> CreateShelter(Shelter shelter);
 
             // Put
             Task<GlobalResponse<dynamic>> UpdateShelter(Shelter shelter);
