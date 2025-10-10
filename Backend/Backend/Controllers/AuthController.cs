@@ -1,10 +1,11 @@
+using Backend.Implementations;
 using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Interfaces;
 using Backend.Infraestructure.Models;
 using Backend.Infrastructure.Database;
-using Backend.Implementations;
 using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2016.Excel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,25 +14,19 @@ namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UsersController : ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly NeonTechDbContext _context;
-        private readonly IUsers _users;
-
-        public UsersController(NeonTechDbContext context, IUsers users)
+        private readonly IAuthenticator _auth;
+        
+        public AuthController(NeonTechDbContext context, IAuthenticator auth)
         {
             _context = context;
-            _users = users;
+            _auth = auth;
         }
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-        {
-            var users = await _context.Users.ToListAsync();
-            return Ok(users);
-        }
-
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> LoginUser(string email, string password)
         {
             try
@@ -40,11 +35,11 @@ namespace Backend.Controllers
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos pueden estar vacios", "401", null));
                 }
-                var response = await _users.LoginUser(email, password);
+                var response = await _auth.Login(email, password);
 
                 if (response == null || response.Data == null)
                 {
-                    return BadRequest(GlobalResponse<string>.Fault("Credenciales inválidas", "401", null));
+                    return BadRequest(GlobalResponse<string>.Fault(response?.Message ?? "Credenciales inválidas", "401", null));
                 }
 
                 return Ok(response);
