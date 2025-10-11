@@ -12,26 +12,18 @@ namespace Backend.Infrastructure.Database
         {
         }
 
-        // Ejemplo: tabla Users
         public DbSet<User> Users { get; set; }
-
         public DbSet<Shelter> Shelters { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<ShelterService> ShelterServices { get; set; }
-
-        // Reservaciones de servicios
-
         public DbSet<ServiceReservation> ServiceReservations { get; set; }
         public DbSet<Bed> Beds { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
-
         public DbSet<Car> Cars { get; set; }
         public DbSet<TransportRequest> TransportRequests { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
             modelBuilder.HasPostgresEnum<UserRole>();
             modelBuilder.HasPostgresEnum<EconomicLevel>();
             modelBuilder.HasPostgresEnum<ReservationStatus>();
@@ -39,9 +31,7 @@ namespace Backend.Infrastructure.Database
             modelBuilder.Entity<User>(entity =>
             {
                 entity.ToTable("users");
-
                 entity.HasKey(s => s.Id);
-
                 entity.Property(s => s.Id).HasColumnName("id");
                 entity.Property(s => s.Name).HasColumnName("name");
                 entity.Property(s => s.Password).HasColumnName("password");
@@ -56,9 +46,7 @@ namespace Backend.Infrastructure.Database
             modelBuilder.Entity<Shelter>(entity =>
             {
                 entity.ToTable("shelters");
-
                 entity.HasKey(s => s.Id);
-
                 entity.Property(s => s.Id).HasColumnName("id");
                 entity.Property(s => s.Name).HasColumnName("name");
                 entity.Property(s => s.Address).HasColumnName("address");
@@ -74,9 +62,7 @@ namespace Backend.Infrastructure.Database
             modelBuilder.Entity<Service>(entity =>
             {
                 entity.ToTable("services");
-
                 entity.HasKey(s => s.Id);
-
                 entity.Property(s => s.Id).HasColumnName("id");
                 entity.Property(s => s.Name).HasColumnName("name");
                 entity.Property(s => s.Description).HasColumnName("description");
@@ -86,9 +72,7 @@ namespace Backend.Infrastructure.Database
             modelBuilder.Entity<ShelterService>(entity =>
             {
                 entity.ToTable("shelter_services");
-
                 entity.HasKey(ss => new { ss.ShelterId, ss.ServiceId });
-
                 entity.Property(ss => ss.ShelterId).HasColumnName("shelter_id");
                 entity.Property(ss => ss.ServiceId).HasColumnName("service_id");
                 entity.Property(ss => ss.Price).HasColumnName("price");
@@ -100,9 +84,7 @@ namespace Backend.Infrastructure.Database
             modelBuilder.Entity<ServiceReservation>(entity =>
             {
                 entity.ToTable("service_reservations");
-
                 entity.HasKey(e => e.Id);
-
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.UserId).HasColumnName("user_id");
                 entity.Property(e => e.ShelterId).HasColumnName("shelter_id");
@@ -111,49 +93,15 @@ namespace Backend.Infrastructure.Database
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at");
                 entity.Property(e => e.IsActive).HasColumnName("is_active");
 
-                entity.HasOne<User>()
-                    .WithMany()
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne<Shelter>()
-                      .WithMany()
-                      .HasForeignKey(e => e.ShelterId)
-                      .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne<Service>()
-                      .WithMany()
-                      .HasForeignKey(e => e.ServiceId)
-                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<User>().WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<Shelter>().WithMany().HasForeignKey(e => e.ShelterId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<Service>().WithMany().HasForeignKey(e => e.ServiceId).OnDelete(DeleteBehavior.Restrict);
             });
-
-            // User
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.ToTable("users");
-
-                entity.HasKey(u => u.Id);
-
-                entity.Property(u => u.Id).HasColumnName("id");
-                entity.Property(u => u.Name).HasColumnName("name");
-                entity.Property(u => u.Password).HasColumnName("password");
-                entity.Property(u => u.Email).HasColumnName("email");
-                entity.Property(u => u.Age).HasColumnName("age");
-                entity.Property(u => u.EconomicLevel).HasColumnName("economic_level");
-                entity.Property(u => u.verificate).HasColumnName("verificate");
-                entity.Property(u => u.shelter).HasColumnName("shelter");
-                entity.Property(u => u.isAdmin).HasColumnName("is_admin");
-            });
-
-            base.OnModelCreating(modelBuilder);
-
 
             modelBuilder.Entity<Bed>(entity =>
             {
                 entity.ToTable("beds");
-
                 entity.HasKey(b => b.Id);
-
                 entity.Property(b => b.Id).HasColumnName("id");
                 entity.Property(b => b.ShelterId).HasColumnName("shelter_id");
                 entity.Property(b => b.BedNumber).HasColumnName("bed_number");
@@ -163,9 +111,7 @@ namespace Backend.Infrastructure.Database
             modelBuilder.Entity<Reservation>(entity =>
             {
                 entity.ToTable("reservations");
-
                 entity.HasKey(r => r.Id);
-
                 entity.Property(r => r.Id).HasColumnName("id");
                 entity.Property(r => r.UserId).HasColumnName("user_id");
                 entity.Property(r => r.BedId).HasColumnName("bed_id");
@@ -175,12 +121,11 @@ namespace Backend.Infrastructure.Database
                 entity.Property(r => r.CreatedAt).HasColumnName("created_at");
             });
 
+            // Cambiamos tablas para Car y TransportRequest
             modelBuilder.Entity<Car>(entity =>
             {
-                entity.ToTable("reservations");
-
+                entity.ToTable("cars"); // ✅ cambio aquí
                 entity.HasKey(c => c.Id);
-
                 entity.Property(c => c.Id).HasColumnName("id");
                 entity.Property(c => c.ShelterId).HasColumnName("shelter_id");
                 entity.Property(c => c.Plate).HasColumnName("plate");
@@ -190,10 +135,8 @@ namespace Backend.Infrastructure.Database
 
             modelBuilder.Entity<TransportRequest>(entity =>
             {
-                entity.ToTable("reservations");
-
+                entity.ToTable("transport_requests"); // ✅ cambio aquí
                 entity.HasKey(tr => tr.Id);
-
                 entity.Property(tr => tr.Id).HasColumnName("id");
                 entity.Property(tr => tr.UserId).HasColumnName("user_id");
                 entity.Property(tr => tr.CarId).HasColumnName("car_id");
@@ -203,12 +146,7 @@ namespace Backend.Infrastructure.Database
                 entity.Property(tr => tr.Status).HasColumnName("status");
             });
 
+            base.OnModelCreating(modelBuilder);
         }
     }
-
-    
-
-
-
-
 }

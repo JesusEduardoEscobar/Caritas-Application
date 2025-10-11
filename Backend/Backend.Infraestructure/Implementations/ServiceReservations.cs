@@ -44,10 +44,12 @@ namespace Backend.Infraestructure.Implementations
 
                 return GlobalResponse<dynamic>.Success(new { reservation.Id }, 1, "Reserva creada", "200");
             }
+
             catch (Exception ex)
             {
-                return GlobalResponse<dynamic>.Fault("Error creando reserva", "-1", null);
+                return GlobalResponse<dynamic>.Fault($"Error creando reserva: {ex.Message}", "-1", null);
             }
+
         }
 
         public async Task<GlobalResponse<dynamic>> ValidateQr(string qrData)
