@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Backend.Infraestructure.Objects.Model
+namespace Backend.Infraestructure.Models
 {
     // Modelo de request para el login
     public class LoginRequest

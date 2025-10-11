@@ -1,6 +1,7 @@
 ﻿using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Interfaces;
 using Backend.Infrastructure.Database;
+using Backend.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
 
@@ -22,7 +23,7 @@ namespace Backend.Implementations
             {
                 var user = await _context.Users
                     .Where(u => u.Email == email && u.Password == password)
-                    .Select(u => new { u.Id, u.Email, u.Name })
+                    .Select(u => new { u.Id, u.Email, u.Name, u.Verified, u.Role })
                     .FirstOrDefaultAsync();
 
 
@@ -39,6 +40,7 @@ namespace Backend.Implementations
             }
         }
 
+        // Registro de los usuarios
         public async Task<GlobalResponse<IEnumerable<dynamic>>> RegisterLite(string nombre, string password, string numero)
         {
             try
@@ -54,21 +56,29 @@ namespace Backend.Implementations
                     return GlobalResponse<IEnumerable<dynamic>>.Fault("El nombre o número ya están en uso", "409", new List<dynamic>());
                 }
 
+                if (!int.TryParse(numero, out int shelterId))
+                {
+                    return GlobalResponse<IEnumerable<dynamic>>.Fault("Número inválido", "400", new List<dynamic>());
+                }
+
                 var nuevoUsuario = new User
                 {
                     Name = nombre,
                     Password = password,
-                    Phone = numero
+                    ShelterId = shelterId,
+                    Verified = false,
+                    Role = UserRole.user
                 };
+
                 _context.Users.Add(nuevoUsuario);
                 await _context.SaveChangesAsync();
 
-                var result = new List<dynamic> { 
-                    new { 
-                        nuevoUsuario.Id, 
-                        nuevoUsuario.Name, 
-                        nuevoUsuario.Phone 
-                    } 
+                var result = new List<dynamic> {
+                    new {
+                        nuevoUsuario.Id,
+                        nuevoUsuario.Name,
+                        nuevoUsuario.Phone
+                    }
                 };
 
                 return GlobalResponse<IEnumerable<dynamic>>.Success(result, 1, "Usuario registrado exitosamente", "201");
@@ -83,18 +93,24 @@ namespace Backend.Implementations
         {
             try
             {
-                var usuario = await _context.Users.FirstOrDefaultAsync(u => u.shelter == numero);
+                if (!int.TryParse(numero, out int shelterId))
+                {
+                    return GlobalResponse<IEnumerable<dynamic>>.Fault("Número inválido", "400", new List<dynamic>());
+                }
+
+                var usuario = await _context.Users.FirstOrDefaultAsync(u => u.ShelterId == shelterId);
+
 
                 if (string.IsNullOrWhiteSpace(usuario.Name)) usuario.Name = nombre;
                 if (string.IsNullOrWhiteSpace(usuario.Email)) usuario.Email = email;
                 if (string.IsNullOrWhiteSpace(usuario.Password)) usuario.Password = password;
 
-                if (usuario.EconomicLevel == 0 && int.TryParse(nivelEconomico, out int nivel))
+                if (Enum.TryParse<EconomicLevel>(nivelEconomico, true, out var nivel))
                 {
                     usuario.EconomicLevel = nivel;
                 }
 
-                usuario.verificate = verificacion;
+                usuario.Verified = verificacion;
 
                 _context.Users.Update(usuario);
                 await _context.SaveChangesAsync();
@@ -105,9 +121,9 @@ namespace Backend.Implementations
                         usuario.Id,
                         usuario.Name,
                         usuario.Email,
-                        usuario.shelter,
+                        usuario.ShelterId,
                         usuario.EconomicLevel,
-                        usuario.verificate
+                        usuario.Verified
                     }
                 };
 
@@ -146,7 +162,10 @@ namespace Backend.Implementations
                     {
                         Email = email,
                         Password = password,
+                        Role = UserRole.admin,
+                        Verified = true
                     };
+
                     _context.Users.Add(nuevoUsuario);
                     await _context.SaveChangesAsync();
 
@@ -166,7 +185,7 @@ namespace Backend.Implementations
                 return GlobalResponse<IEnumerable<dynamic>>.Fault($"Error al registrar usuario: {ex.Message}", "-1", new List<dynamic>());
             }
         }
-        
+
         public async Task<GlobalResponse<IEnumerable<dynamic>>> VerifyUser(int id, bool verificacion)
         {
             try
@@ -176,25 +195,123 @@ namespace Backend.Implementations
                 {
                     return GlobalResponse<IEnumerable<dynamic>>.Fault("Usuario no encontrado", "404", new List<dynamic>());
                 }
-                usuario.verificate = verificacion;
+
+                usuario.Verified = verificacion;
                 _context.Users.Update(usuario);
                 await _context.SaveChangesAsync();
+
                 var result = new List<dynamic>
                 {
                     new {
                         usuario.Id,
                         usuario.Name,
                         usuario.Email,
-                        usuario.shelter,
+                        usuario.ShelterId,
                         usuario.EconomicLevel,
-                        usuario.verificate
+                        usuario.Verified,
+                        usuario.Role
                     }
                 };
+
                 return GlobalResponse<IEnumerable<dynamic>>.Success(result, 1, "Verificación actualizada exitosamente", "200");
             }
             catch (Exception ex)
             {
                 return GlobalResponse<IEnumerable<dynamic>>.Fault($"Error al actualizar verificación: {ex.Message}", "-1", new List<dynamic>());
+            }
+        }
+
+
+        // MOSTRAR USUARIOS
+        public async Task<GlobalResponse<IEnumerable<dynamic>>> GetUsers()
+        {
+            try
+            {
+                var usuarios = await _context.Users
+                    .Select(u => new
+                    {
+                        u.Id,
+                        u.Name,
+                        u.Email,
+                        u.Phone,
+                        u.ShelterId,
+                        u.EconomicLevel,
+                        u.Verified,
+                        u.Role
+                    })
+                    .ToListAsync();
+                if (usuarios == null || usuarios.Count == 0)
+                {
+                    return GlobalResponse<IEnumerable<dynamic>>.Fault("No se encontraron usuarios", "404", new List<dynamic>());
+                }
+                return GlobalResponse<IEnumerable<dynamic>>.Success(usuarios, usuarios.Count, "Usuarios obtenidos exitosamente", "200");
+            }
+            catch (Exception ex)
+            {
+                return GlobalResponse<IEnumerable<dynamic>>.Fault($"Error al obtener usuarios: {ex.Message}", "-1", new List<dynamic>());
+            }
+        }
+
+        public async Task<GlobalResponse<IEnumerable<dynamic>>> GetUserById(int id)
+        {
+            try
+            {
+                var usuario = await _context.Users
+                    .Where(u => u.Id == id)
+                    .Select(u => new
+                    {
+                        u.Id,
+                        u.Name,
+                        u.Email,
+                        u.Phone,
+                        u.ShelterId,
+                        u.EconomicLevel,
+                        u.Verified,
+                        u.Role
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (usuario == null)
+                {
+                    return GlobalResponse<IEnumerable<dynamic>>.Fault("Usuario no encontrado", "404", new List<dynamic>());
+                }
+
+                return GlobalResponse<IEnumerable<dynamic>>.Success(new List<dynamic> { usuario }, 1, "Usuario obtenido exitosamente", "200");
+            }
+            catch (Exception ex)
+            {
+                return GlobalResponse<IEnumerable<dynamic>>.Fault($"Error al obtener usuario: {ex.Message}", "-1", new List<dynamic>());
+            }
+        }
+
+
+        public async Task<GlobalResponse<IEnumerable<dynamic>>> FilterByShelter(int shelterId)
+        {
+            try
+            {
+                var usuarios = await _context.Users
+                    .Where(u => u.ShelterId == shelterId)
+                    .Select(u => new
+                    {
+                        u.Id,
+                        u.Name,
+                        u.Email,
+                        u.Phone,
+                        u.ShelterId,
+                        u.EconomicLevel,
+                        u.Verified,
+                        u.Role
+                    })
+                    .ToListAsync();
+                if (usuarios == null || usuarios.Count == 0)
+                {
+                    return GlobalResponse<IEnumerable<dynamic>>.Fault("No se encontraron usuarios para el shelter especificado", "404", new List<dynamic>());
+                }
+                return GlobalResponse<IEnumerable<dynamic>>.Success(usuarios, usuarios.Count, "Usuarios obtenidos exitosamente", "200");
+            }
+            catch (Exception ex)
+            {
+                return GlobalResponse<IEnumerable<dynamic>>.Fault($"Error al obtener usuarios: {ex.Message}", "-1", new List<dynamic>());
             }
         }
     }

@@ -1,13 +1,14 @@
 using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Interfaces;
-using Backend.Infraestructure.Objects.Model;
 using Backend.Infrastructure.Database;
+using Backend.Implementations;
 using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Backend.Infraestructure.Models;
 
 namespace Backend.Controllers
 {
@@ -149,6 +150,70 @@ namespace Backend.Controllers
             }
         }
 
+        [HttpGet("allUsers")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            try
+            {
+                var response = await _users.GetUsers();
+                if (response == null || response.Data == null || !response.Data.Any())
+                {
+                    return NotFound(GlobalResponse<string>.Fault("No se encontraron usuarios", "404", null));
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            try
+            {
+                if (id <= 0)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("El ID del usuario debe ser mayor que cero", "400", null));
+                }
+                var response = await _users.GetUserById(id);
+                if (response == null || response.Data == null || !response.Data.Any())
+                {
+                    return NotFound(GlobalResponse<string>.Fault("Usuario no encontrado", "404", null));
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [HttpGet("filter-by-shelter/{shelterId:int}")]
+        public async Task<IActionResult> FilterByShelter(int shelterId)
+        {
+            try
+            {
+                if (shelterId <= 0)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("El ID del refugio debe ser mayor que cero", "400", null));
+                }
+                var response = await _users.FilterByShelter(shelterId);
+                if (response == null || response.Data == null || !response.Data.Any())
+                {
+                    return NotFound(GlobalResponse<string>.Fault("No se encontraron usuarios para el refugio especificado", "404", null));
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
 
     }
 }

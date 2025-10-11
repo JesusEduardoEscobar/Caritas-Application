@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using Backend.Dtos;
+using Backend.Infraestructure.Models;
 
 namespace Backend.Controllers
 {

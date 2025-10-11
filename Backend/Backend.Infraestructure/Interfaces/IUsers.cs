@@ -21,8 +21,8 @@ namespace Backend.Infraestructure.Interfaces
         Task<GlobalResponse<IEnumerable<dynamic>>> VerifyUser(int id, bool verificacion);
 
         // Show users
-        //Task<GlobalResponse<IEnumerable<dynamic>>> GetUsers();
-        //Task<GlobalResponse<IEnumerable<dynamic>>> GetUsersByOne();
-        //Task<GlobalResponse<IEnumerable<dynamic>>> FilterByShelter();
+        Task<GlobalResponse<IEnumerable<dynamic>>> GetUsers();
+        Task<GlobalResponse<IEnumerable<dynamic>>> GetUserById(int id);
+        Task<GlobalResponse<IEnumerable<dynamic>>> FilterByShelter(int shelterId);
     }
 }
