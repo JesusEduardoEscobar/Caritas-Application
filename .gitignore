@@ -1,9 +1,19 @@
-﻿# Ignorar carpetas de compilación y configuración
-Backend/.vs/
-Backend/Backend/bin/
-Backend/Backend/obj/
-Backend/Backend.Infrastructure/bin/
-Backend/Backend.Infrastructure/obj/
+﻿################################################################################
+# Archivo .gitignore unificado para el proyecto Caritas
+# Combina reglas de Visual Studio y exclusiones específicas del backend.
+################################################################################
+
+# Ignorar carpetas generadas automáticamente por Visual Studio
+/Backend/.vs/
+/.vs/
+
+# Ignorar archivos de compilación
+/Backend/Backend/bin/
+/Backend/Backend/obj/
+/Backend/Backend.Infrastructure/bin/
+/Backend/Backend.Infrastructure/obj/
+/Backend/Backend.Infraestructure/bin/
+/Backend/Backend.Infraestructure/obj/
 
 # Ignorar archivos temporales y de usuario
 *.user
@@ -11,10 +21,22 @@ Backend/Backend.Infrastructure/obj/
 *.log
 launchSettings.json
 
-# Ignorar archivos sueltos en Backend.Infrastructure, pero NO sus subcarpetas importantes
-# (No uses Backend.Infrastructure/* porque eso bloquea todo)
-# En lugar de eso, ignora carpetas específicas y archivos que no quieres
+# Ignorar entornos locales
+.env
+.env.*
 
-# Si hay archivos sueltos que no quieres en Backend.Infrastructure, ignóralos uno por uno:
+# Mantener visibles las carpetas importantes
+!Backend/Backend/Controllers/
+!Backend/Backend/Dtos/
+!Backend/Backend/Implementations/
+!Backend/Backend/Program.cs
+!Backend/Backend.Infrastructure/Implementations/
+!Backend/Backend.Infrastructure/Interfaces/
+!Backend/Backend.Infrastructure/Objects/
+!Backend/Backend.Infraestructure/Implementations/
+!Backend/Backend.Infraestructure/Interfaces/
+!Backend/Backend.Infraestructure/Objects/
+
+# Archivos específicos que no se deben versionar
 Backend/Backend.Infrastructure/archivo-temporal.txt
 Backend/Backend.Infrastructure/config-local.json
