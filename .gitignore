@@ -2,27 +2,25 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/Backend/.vs/Backend
+# Ignorar carpetas de compilación y configuración
+Backend/.vs/
+Backend/Backend/bin/
+Backend/Backend/obj/
+Backend/Backend.Infraestructure/bin/
+Backend/Backend.Infraestructure/obj/
 
-/Backend/Backend/bin
-
-/Backend/Backend/obj
-
-/Backend/Backend.Infraestructure/bin
-
-/Backend/Backend.Infraestructure/obj
-
-!Backend/Backend.Infraestructure/Controllers
-
-!Backend/Backend/Dtos
-
-!Backend/Backend/Implementations
-
+# Ignorar todo en Backend/Backend excepto lo que se necesita
+Backend/Backend/*
 !Backend/Backend/Program.cs
+!Backend/Backend/Dtos/
+!Backend/Backend/Implementations/
+!Backend/Backend/Controllers/
 
-!Backend/Backend.Infraestructure/Implementations
+# Ignorar todo en Backend/Backend.Infraestructure excepto lo que se necesita
+Backend/Backend.Infraestructure/*
+!Backend/Backend.Infraestructure/Controllers/
+!Backend/Backend.Infraestructure/Implementations/
+!Backend/Backend.Infraestructure/Interfaces/
+!Backend/Backend.Infraestructure/Objects/
 
-!Backend/Backend.Infraestructure/Interfaces
-
-!Backend/Backend.Infraestructure/Objects
 
