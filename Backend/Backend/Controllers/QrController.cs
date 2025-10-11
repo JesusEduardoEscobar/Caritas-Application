@@ -1,44 +1,61 @@
-using Microsoft.AspNetCore.Mvc;
+using Backend.Infrastructure.Dtos;
+using Backend.Infraestructure.Interfaces;
 using QRCoder;
-using System.Drawing;
+using Microsoft.AspNetCore.Mvc;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Text;
 
 namespace Backend.Controllers
 {
-
-    /// Controlador para la generación y validación de códigos QR.
-
     [ApiController]
     [Route("api/[controller]")]
     public class QrController : ControllerBase
     {
+        private readonly IServiceReservations _serviceReservations;
 
-        /// Genera un código QR a partir de los datos del servicio o check-in.
-        [HttpPost("generate")]
-        [ProducesResponseType(typeof(object), 200)]
-        [ProducesResponseType(typeof(string), 400)]
-        public IActionResult GenerateQr([FromBody] QrRequest request)
+        public QrController(IServiceReservations serviceReservations)
         {
-            if (request == null)
-                return BadRequest("❌ Datos inválidos");
+            _serviceReservations = serviceReservations;
+        }
+
+        [HttpPost("generate")]
+        public async Task<IActionResult> GenerateQr([FromBody] QrRequest request)
+        {
+            if (request == null) return BadRequest("❌ Datos inválidos");
 
             try
             {
-                // Formato de la cadena QR
+                // Formato legible del QR
                 string qrData = $"{request.Shelter}-{request.UserId}-{request.Service}-{request.Frequency}-{request.Persons}-{request.Time}";
 
-                // Generar QR como imagen
+                // Generar imagen QR
                 using var qrGenerator = new QRCodeGenerator();
                 var qrCodeData = qrGenerator.CreateQrCode(qrData, QRCodeGenerator.ECCLevel.Q);
                 using var qrCode = new QRCode(qrCodeData);
                 using var bitmap = qrCode.GetGraphic(20);
 
-                // Convertir imagen a Base64
                 using var ms = new MemoryStream();
                 bitmap.Save(ms, ImageFormat.Png);
                 string base64Image = Convert.ToBase64String(ms.ToArray());
+
+                // Guardar en BD (DTO)
+                var createDto = new ServiceReservationCreateDto
+                {
+                    UserId = request.UserId,
+                    ShelterId = request.ShelterId,
+                    ServiceId = request.ServiceId,
+                    QrData = qrData
+                };
+
+                var saveResult = await _serviceReservations.CreateReservation(createDto);
+
+                // Si tu GlobalResponse tiene Data / Code, comprueba aquí (ej: saveResult == null o Data == null)
+                // Asumimos que en caso de fallo CreateReservation devuelve Fault -> Data será null
+                // Ajusta según tu GlobalResponse real
+                if (!saveResult.Ok)
+                {
+                    return StatusCode(500, $"❌ Error al guardar la reserva: {saveResult.Message}");
+                }
 
                 return Ok(new
                 {
@@ -52,13 +69,8 @@ namespace Backend.Controllers
             }
         }
 
-   
-        /// Valida el contenido de un código QR escaneado.
-
         [HttpPost("validate")]
-        [ProducesResponseType(typeof(object), 200)]
-        [ProducesResponseType(typeof(string), 400)]
-        public IActionResult ValidateQr([FromBody] QrValidationRequest qrData)
+        public async Task<IActionResult> ValidateQr([FromBody] QrValidationRequest qrData)
         {
             if (string.IsNullOrEmpty(qrData?.QrText))
                 return BadRequest("❌ QR vacío o inválido");
@@ -69,15 +81,16 @@ namespace Backend.Controllers
                 if (parts.Length != 6)
                     return BadRequest("❌ Formato de QR no válido");
 
-                return Ok(new
+                // Validar contra BD
+                var validationResult = await _serviceReservations.ValidateQr(qrData.QrText);
+                if (!validationResult.Ok)
                 {
-                    Shelter = parts[0],
-                    UserId = parts[1],
-                    Service = parts[2],
-                    Frequency = parts[3],
-                    Persons = parts[4],
-                    Time = parts[5]
-                });
+                    return StatusCode(500, $"❌ Error en validación: {validationResult.Message}");
+                    }
+
+                // Si tu GlobalResponse devuelve Fault con Data null -> interpretarlo
+                // Aquí devolvemos lo que haya venido del servicio (ajusta según GlobalResponse)
+                return Ok(validationResult);
             }
             catch (Exception ex)
             {
@@ -86,22 +99,23 @@ namespace Backend.Controllers
         }
     }
 
-
-    /// Datos para generar el QR.
+    // Request bodies (ajusta tipos para usar ints para ids)
     public class QrRequest
     {
-        public string Shelter { get; set; }
-        public string UserId { get; set; }
-        public string Service { get; set; }
-        public string Frequency { get; set; }
+        public int UserId { get; set; }
+        public int ShelterId { get; set; }
+        public int ServiceId { get; set; }
+
+        // nombres para componer el string del QR (opcional)
+        public string Shelter { get; set; } = string.Empty;
+        public string Service { get; set; } = string.Empty;
+        public string Frequency { get; set; } = string.Empty;
         public int Persons { get; set; }
-        public string Time { get; set; }
+        public string Time { get; set; } = string.Empty;
     }
 
-
-    /// Datos para validar un QR existente.
     public class QrValidationRequest
     {
-        public string QrText { get; set; }
+        public string QrText { get; set; } = string.Empty;
     }
 }
