@@ -107,6 +107,7 @@ namespace Backend.Infrastructure.Database
         public string Email { get; set; }
         public int Age { get; set; }
         public int EconomicLevel { get; set; }
+        public string Phone { get; set; }
         public bool verificate { get; set; }
         public string shelter { get; set; }
         public bool? isAdmin { get; set; }

@@ -15,10 +15,10 @@ const stats = {
 };
 
 const bedsByService = [
-  { service: 'Urgencias', total: 15, occupied: 12, available: 3 },
-  { service: 'Cirugía', total: 20, occupied: 15, available: 5 },
-  { service: 'Medicina General', total: 10, occupied: 4, available: 6 },
-  { service: 'Pediatría', total: 5, occupied: 0, available: 5 }
+  { service: 'Lavanderia', total: 15, occupied: 12, available: 3 },
+  { service: 'Cocina', total: 20, occupied: 15, available: 5 },
+  { service: 'Ducha', total: 10, occupied: 4, available: 6 },
+  { service: 'Doctor', total: 5, occupied: 0, available: 5 }
 ];
 
 export function DashboardStats() {

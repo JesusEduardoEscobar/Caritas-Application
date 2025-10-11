@@ -1,5 +1,7 @@
-using Microsoft.EntityFrameworkCore;
+using Backend.Implementations;
+using Backend.Infraestructure.Interfaces;
 using Backend.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,9 @@ builder.Services.AddDbContext<NeonTechDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers();
+
+builder.Services.AddScoped<IUsers, Login>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

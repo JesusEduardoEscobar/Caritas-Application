@@ -614,14 +614,73 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "email",
-        "Type": "System.String",
-        "IsRequired": false
-      },
+        "Name": "request",
+        "Type": "Backend.Infraestructure.Objects.Model.LoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Backend.Controllers.UsersController",
+    "Method": "RegisterAdmin",
+    "RelativePath": "api/Users/register-admin",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
       {
-        "Name": "password",
-        "Type": "System.String",
-        "IsRequired": false
+        "Name": "request",
+        "Type": "Backend.Infraestructure.Objects.Model.UserRegistrationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Backend.Controllers.UsersController",
+    "Method": "RegisterLite",
+    "RelativePath": "api/Users/register-lite",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Backend.Infraestructure.Objects.Model.UserRegistrationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Backend.Controllers.UsersController",
+    "Method": "RegisterUser",
+    "RelativePath": "api/Users/register-user",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Backend.Infraestructure.Objects.Model.UserRegistrationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Backend.Controllers.UsersController",
+    "Method": "VerifyUser",
+    "RelativePath": "api/Users/verify-user",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "Backend.Infraestructure.Objects.Model.VerifyUserRequest",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
