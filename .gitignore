@@ -1,31 +1,20 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
+﻿# Ignorar carpetas de compilación y configuración
+Backend/.vs/
+Backend/Backend/bin/
+Backend/Backend/obj/
+Backend/Backend.Infrastructure/bin/
+Backend/Backend.Infrastructure/obj/
 
-/Backend/.vs/Backend
+# Ignorar archivos temporales y de usuario
+*.user
+*.suo
+*.log
+launchSettings.json
 
-/Backend/Backend/bin
+# Ignorar archivos sueltos en Backend.Infrastructure, pero NO sus subcarpetas importantes
+# (No uses Backend.Infrastructure/* porque eso bloquea todo)
+# En lugar de eso, ignora carpetas específicas y archivos que no quieres
 
-/Backend/Backend/obj
-
-/Backend/Backend.Infraestructure/bin
-
-/Backend/Backend.Infraestructure/obj
-
-!Backend/Backend/Controllers
-
-!Backend/Backend/Dtos
-
-!Backend/Backend/Implementations
-
-!Backend/Backend/Program.cs
-
-!Backend/Backend.Infraestructure/Implementations
-
-!Backend/Backend.Infraestructure/Interfaces
-
-!Backend/Backend.Infraestructure/Objects
-
-/.vs
-
-/.env
+# Si hay archivos sueltos que no quieres en Backend.Infrastructure, ignóralos uno por uno:
+Backend/Backend.Infrastructure/archivo-temporal.txt
+Backend/Backend.Infrastructure/config-local.json

@@ -9,7 +9,7 @@ import { useAuth } from './AuthProvider';
 import { Eye, EyeOff, Shield, Users } from 'lucide-react';
 
 export function LoginForm() {
-  const { login, register, isLoading } = useAuth();
+  const { login, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   
@@ -17,14 +17,6 @@ export function LoginForm() {
   const [loginData, setLoginData] = useState({
     email: '',
     password: ''
-  });
-  
-  // Register form state
-  const [registerData, setRegisterData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    name: ''
   });
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -39,31 +31,6 @@ export function LoginForm() {
     const result = await login(loginData.email, loginData.password);
     if (!result.success) {
       setError(result.error || 'Error al iniciar sesión');
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    
-    if (!registerData.email || !registerData.password || !registerData.name) {
-      setError('Por favor completa todos los campos');
-      return;
-    }
-    
-    if (registerData.password !== registerData.confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return;
-    }
-    
-    if (registerData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
-
-    const result = await register(registerData.email, registerData.password, registerData.name);
-    if (!result.success) {
-      setError(result.error || 'Error al crear la cuenta');
     }
   };
 
@@ -83,9 +50,8 @@ export function LoginForm() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-1">
               <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
-              <TabsTrigger value="register">Registrarse</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
@@ -144,68 +110,6 @@ export function LoginForm() {
                   <p>Email: admin@test.com</p>
                   <p>Contraseña: admin123</p>
                 </div>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="register">
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="register-name">Nombre completo</Label>
-                  <Input
-                    id="register-name"
-                    type="text"
-                    placeholder="Juan Pérez"
-                    value={registerData.name}
-                    onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                    disabled={isLoading}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-email">Email</Label>
-                  <Input
-                    id="register-email"
-                    type="email"
-                    placeholder="admin@ejemplo.com"
-                    value={registerData.email}
-                    onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                    disabled={isLoading}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-password">Contraseña</Label>
-                  <Input
-                    id="register-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={registerData.password}
-                    onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                    disabled={isLoading}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="register-confirm-password">Confirmar contraseña</Label>
-                  <Input
-                    id="register-confirm-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={registerData.confirmPassword}
-                    onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                    disabled={isLoading}
-                  />
-                </div>
-
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Creando cuenta...' : 'Crear Cuenta de Administrador'}
-                </Button>
               </form>
             </TabsContent>
           </Tabs>

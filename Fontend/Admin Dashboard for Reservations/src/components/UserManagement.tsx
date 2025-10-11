@@ -17,7 +17,7 @@ const userData = [
     name: 'Juan Pérez', 
     email: 'juan.perez@email.com', 
     phone: '+1234567890', 
-    role: 'Paciente', 
+    economi: 'Paciente', 
     status: 'Activo',
     createdAt: '2024-01-10',
     reservations: 3
@@ -27,7 +27,7 @@ const userData = [
     name: 'María García', 
     email: 'maria.garcia@email.com', 
     phone: '+1234567891', 
-    role: 'Paciente', 
+    economi: 'Paciente', 
     status: 'Activo',
     createdAt: '2024-01-08',
     reservations: 1
@@ -37,7 +37,7 @@ const userData = [
     name: 'Dr. Carlos López', 
     email: 'carlos.lopez@hospital.com', 
     phone: '+1234567892', 
-    role: 'Médico', 
+    economi: 'Médico', 
     status: 'Activo',
     createdAt: '2024-01-05',
     reservations: 0
@@ -47,15 +47,14 @@ const userData = [
     name: 'Ana Rodríguez', 
     email: 'ana.rodriguez@email.com', 
     phone: '+1234567893', 
-    role: 'Paciente', 
+    economi: 'Paciente', 
     status: 'Inactivo',
     createdAt: '2024-01-03',
     reservations: 0
   }
 ];
 
-const roles = ['Paciente', 'Médico', 'Administrador', 'Enfermero'];
-const statuses = ['Activo', 'Inactivo'];
+const economics = ['Ninguno', 'Basico', 'Urgente', 'Especial'];
 
 export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -66,14 +65,13 @@ export function UserManagement() {
     name: '',
     email: '',
     phone: '',
-    role: 'Paciente',
-    status: 'Activo'
+    economi: 'Ninguno',
   });
 
   const filteredUsers = userData.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = selectedRole === 'Todos' || user.role === selectedRole;
+    const matchesRole = selectedRole === 'Todos' || user.economi === selectedRole;
     const matchesStatus = selectedStatus === 'Todos' || user.status === selectedStatus;
     
     return matchesSearch && matchesRole && matchesStatus;
@@ -87,30 +85,22 @@ export function UserManagement() {
       name: '',
       email: '',
       phone: '',
-      role: 'Paciente',
-      status: 'Activo'
+      economi: 'Basico'
     });
   };
 
-  const getStatusBadge = (status: string) => {
-    return (
-      <Badge variant={status === 'Activo' ? 'default' : 'secondary'}>
-        {status}
-      </Badge>
-    );
-  };
 
-  const getRoleBadge = (role: string) => {
-    const roleColors = {
-      'Paciente': 'outline',
-      'Médico': 'default',
-      'Administrador': 'destructive',
-      'Enfermero': 'secondary'
+  const getRoleBadge = (economi: string) => {
+    const econimicLevel = {
+      'Ninguno': 'outline',
+      'Basico': 'default',
+      'Urgente': 'destructive',
+      'Especial': 'secondary'
     } as const;
     
     return (
-      <Badge variant={roleColors[role as keyof typeof roleColors]}>
-        {role}
+      <Badge variant={econimicLevel[economi as keyof typeof econimicLevel]}>
+        {economi}
       </Badge>
     );
   };
@@ -162,29 +152,17 @@ export function UserManagement() {
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="role">Rol</Label>
-                <Select value={newUser.role} onValueChange={(value) => setNewUser(prev => ({ ...prev, role: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {roles.map(role => (
-                      <SelectItem key={role} value={role}>{role}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="status">Estado</Label>
-                <Select value={newUser.status} onValueChange={(value) => setNewUser(prev => ({ ...prev, status: value }))}>
+
+              <div className='space-y-2'>
+                <Label htmlFor="economi">Necesidad economica</Label>
+                <Select value={newUser.economi} onValueChange={(value: string) => setNewUser(prev => ({ ...prev, economi: value }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {statuses.map(status => (
-                      <SelectItem key={status} value={status}>{status}</SelectItem>
+                    {economics.map(economi => (
+                      <SelectItem key={economi} value={economi}>{economi}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -230,30 +208,15 @@ export function UserManagement() {
             </div>
 
             <div className="space-y-2">
-              <Label>Rol</Label>
+              <Label>Necesidad economica</Label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Todos">Todos los roles</SelectItem>
-                  {roles.map(role => (
-                    <SelectItem key={role} value={role}>{role}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Estado</Label>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Todos">Todos los estados</SelectItem>
-                  {statuses.map(status => (
-                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  <SelectItem value="Todos">Todos los nivels de necesidad</SelectItem>
+                  {economics.map(economi => (
+                    <SelectItem key={economi} value={economi}>{economi}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -272,8 +235,7 @@ export function UserManagement() {
               <TableRow>
                 <TableHead>Usuario</TableHead>
                 <TableHead>Contacto</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Estado</TableHead>
+                <TableHead>Necesidad economica</TableHead>
                 <TableHead>Reservas</TableHead>
                 <TableHead>Fecha Registro</TableHead>
                 <TableHead>Acciones</TableHead>
@@ -308,10 +270,7 @@ export function UserManagement() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {getRoleBadge(user.role)}
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(user.status)}
+                    {getRoleBadge(user.economi)}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">

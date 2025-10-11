@@ -8,16 +8,16 @@ import { Bed, Filter, Search, Plus, Edit, Trash2 } from 'lucide-react';
 
 // Mock data
 const bedData = [
-  { id: 1, number: '101', service: 'Urgencias', status: 'occupied', patient: 'Juan Pérez', checkIn: '2024-01-15', checkOut: '2024-01-18' },
-  { id: 2, number: '102', service: 'Urgencias', status: 'available', patient: null, checkIn: null, checkOut: null },
-  { id: 3, number: '103', service: 'Urgencias', status: 'maintenance', patient: null, checkIn: null, checkOut: null },
-  { id: 4, number: '201', service: 'Cirugía', status: 'occupied', patient: 'María García', checkIn: '2024-01-14', checkOut: '2024-01-20' },
-  { id: 5, number: '202', service: 'Cirugía', status: 'reserved', patient: 'Carlos López', checkIn: '2024-01-16', checkOut: '2024-01-19' },
-  { id: 6, number: '301', service: 'Medicina General', status: 'available', patient: null, checkIn: null, checkOut: null },
+  { id: 1, number: '101', service: 'Lavanderia', status: 'occupied', patient: 'Juan Pérez', checkIn: '2024-01-15', checkOut: '2024-01-18' },
+  { id: 2, number: '102', service: 'Lavanderia', status: 'available', patient: null, checkIn: null, checkOut: null },
+  { id: 3, number: '103', service: 'Lavanderia', status: 'maintenance', patient: null, checkIn: null, checkOut: null },
+  { id: 4, number: '201', service: 'Cocina', status: 'occupied', patient: 'María García', checkIn: '2024-01-14', checkOut: '2024-01-20' },
+  { id: 5, number: '202', service: 'Cocina', status: 'reserved', patient: 'Carlos López', checkIn: '2024-01-16', checkOut: '2024-01-19' },
+  { id: 6, number: '301', service: 'Ducha', status: 'available', patient: null, checkIn: null, checkOut: null },
   { id: 7, number: '401', service: 'Pediatría', status: 'available', patient: null, checkIn: null, checkOut: null }
 ];
 
-const services = ['Todos', 'Urgencias', 'Cirugía', 'Medicina General', 'Pediatría'];
+const services = ['Todos', 'Lavanderia', 'Cocina', 'Ducha', 'PediDoctoratría'];
 const statuses = ['Todos', 'available', 'occupied', 'reserved', 'maintenance'];
 
 const statusLabels = {
