@@ -1,0 +1,11 @@
+.vs/
+*.vsidx
+bin/
+obj/
+appsettings.json
+
+!Database/
+!Extensions/
+!Interfaces/
+!Objects
+

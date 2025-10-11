@@ -37,15 +37,15 @@ export function AdminDashboard({ onActivateQRMode, isMobile }: AdminDashboardPro
 
       <div className="max-w-7xl mx-auto p-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="flex w-full justify-between">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Dashboard
             </TabsTrigger>
-            <TabsTrigger value="beds" className="flex items-center gap-2">
+            {/* <TabsTrigger value="beds" className="flex items-center gap-2">
               <Bed className="h-4 w-4" />
               Camas
-            </TabsTrigger>
+            </TabsTrigger> */}
             <TabsTrigger value="reservations" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               Reservas
@@ -64,9 +64,9 @@ export function AdminDashboard({ onActivateQRMode, isMobile }: AdminDashboardPro
             <DashboardStats />
           </TabsContent>
 
-          <TabsContent value="beds">
+          {/* <TabsContent value="beds">
             <BedManagement />
-          </TabsContent>
+          </TabsContent> */}
 
           <TabsContent value="reservations">
             <ReservationManagement />
