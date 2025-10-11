@@ -1,6 +1,8 @@
 using Backend.Implementations;
 using Backend.Infraestructure.Interfaces;
 using Backend.Infrastructure.Database;
+using Backend.Infraestructure.Interfaces;
+using Backend.Infraestructure.Implementations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -51,7 +53,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Mi API", Version = "v1" });
 
-    // Configuraci�n JWT
+    // Configuración JWT
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -77,6 +79,9 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+// ð¹ Registramos el servicio correctamente (ya estaba, se mantiene)
+builder.Services.AddScoped<IServiceReservations, ServiceReservations>();
 
 var app = builder.Build();
 
