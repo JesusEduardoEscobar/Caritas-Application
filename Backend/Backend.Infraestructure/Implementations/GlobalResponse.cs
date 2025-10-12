@@ -14,7 +14,7 @@ namespace Backend.Infraestructure.Implementations
         public bool Ok { get; set; }
         public string Code { get; set; }
         public string Message { get; set; }
-        public T Data { get; set; } = default(T)!;
+        public T? Data { get; set; } = default;
 
         public int RowsCount { get; set; }
 
@@ -97,7 +97,7 @@ namespace Backend.Infraestructure.Implementations
             };
         }
 
-        public static GlobalResponse<T> Fault(string message = "", string errorCode = "", T data = default(T)!)
+        public static GlobalResponse<T> Fault(string message = "", string errorCode = "", T? data = default!)
         {
             return new GlobalResponse<T>
             {

@@ -12,6 +12,10 @@
 
 /Backend/Backend.Infraestructure/obj
 
+/Backend/Backend.Tests/bin
+
+/Backend/Backend.Tests/obj
+
 !Backend/Backend.Infraestructure/Controllers
 
 !Backend/Backend/Dtos
@@ -26,3 +30,6 @@
 
 !Backend/Backend.Infraestructure/Objects
 
+!Backend/Backend.Tests/Implementations
+
+!Backend/Backend.Tests/TestHelpers
