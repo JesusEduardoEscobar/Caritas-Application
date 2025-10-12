@@ -28,8 +28,4 @@
 		<ProjectReference Include="..\Backend.Infraestructure\Backend.Infraestructure.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Dtos\" />
-	</ItemGroup>
-
 </Project>

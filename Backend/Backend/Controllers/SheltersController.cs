@@ -5,73 +5,49 @@ using Backend.Infraestructure.Interfaces;
 using Backend.Infraestructure.Models;
 using Backend.Infrastructure.Database;
 using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Net;
 
 namespace Backend.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class SheltersController : ControllerBase
     {
-        private readonly NeonTechDbContext _context;
         private readonly IShelters _shelters;
 
-        public SheltersController(NeonTechDbContext context, IShelters shelters)
+        public SheltersController(IShelters shelters)
         {
-            _context = context;
             _shelters = shelters;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Shelter>>> GetShelters()
         {
-            try
-            {
-                var response = await _shelters.GetShelters();
-
-                if (response == null || response.Data == null)
-                {
-                    return BadRequest(GlobalResponse<string>.Fault("No se encontraron Shelters en la base de datos", "401", null));
-                }
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
+            var response = await _shelters.GetShelters();
+            return MapResponse(response);
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Shelter>> GetShelter(int id)
         {
-            try
-            {
-                var response = await _shelters.GetShelter(id);
-
-                if (response == null || response.Data == null)
-                {
-                    return BadRequest(GlobalResponse<string>.Fault("No se encontraron Shelters en la base de datos", "401", null));
-                }
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
+            var response = await _shelters.GetShelter(id);
+            return MapResponse(response);
         }
 
-        [HttpPost()]
+        [HttpPost]
         public async Task<ActionResult<Shelter>> CreateShelter([FromBody] ShelterCreateDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
+
             var shelter = new Shelter
             {
                 Name = dto.Name,
@@ -81,90 +57,72 @@ namespace Backend.Controllers
                 Phone = dto.Phone,
                 Capacity = dto.Capacity,
                 Description = dto.Description,
-                Occupancy = dto.Occupancy
+                Occupancy = dto.Occupancy,
             };
 
-            _context.Shelters.Add(shelter);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetShelter), new { id = shelter.Id }, shelter);
+            var response = await _shelters.CreateShelter(shelter);
+            return MapResponse(response, created: true);
         }
 
 
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateShelter(int id, Shelter shelter)
+        public async Task<ActionResult<Shelter>> UpdateShelter(int id, Shelter shelter)
         {
-            if (id != shelter.Id) return BadRequest();
+            if (id != shelter.Id)
+                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
 
-            var existing = await _context.Shelters.FindAsync(id);
-            if (existing == null) return NotFound();
-
-            existing.Name = shelter.Name;
-            existing.Address = shelter.Address;
-            existing.Latitude = shelter.Latitude;
-            existing.Longitude = shelter.Longitude;
-            existing.Phone = shelter.Phone;
-            existing.Capacity = shelter.Capacity;
-            existing.Description = shelter.Description;
-
-            await _context.SaveChangesAsync();
-            return NoContent();
+            var response = await _shelters.UpdateShelter(shelter);
+            return MapResponse(response);
         }
 
         [HttpPatch("{id:int}/name")]
-        public async Task<IActionResult> UpdateShelterName(int id, [FromBody] string name)
+        public async Task<ActionResult<Shelter>> UpdateShelterName(int id, [FromBody] string name)
         {
-            var shelter = await _context.Shelters.FindAsync(id);
-            if (shelter == null) return NotFound();
-
-            shelter.Name = name;
-            await _context.SaveChangesAsync();
-            return NoContent();
+            var response = await _shelters.UpdateShelterName(id, name);
+            return MapResponse(response);
         }
 
         [HttpPatch("{id:int}/address")]
-        public async Task<IActionResult> UpdateShelterAddress(int id, [FromBody] string address)
+        public async Task<ActionResult<Shelter>> UpdateShelterAddress(int id, [FromBody] string address)
         {
-            var shelter = await _context.Shelters.FindAsync(id);
-            if (shelter == null) return NotFound();
-
-            shelter.Address = address;
-            await _context.SaveChangesAsync();
-            return NoContent();
+            var response = await _shelters.UpdateShelterName(id, address);
+            return MapResponse(response);
         }
 
         [HttpPatch("{id:int}/coordinates")]
-        public async Task<IActionResult> UpdateShelterCoordinates(int id, [FromBody] CoordinatesDto coords, [FromHeader] object header)
+        public async Task<ActionResult<Shelter>> UpdateShelterCoordinates(int id, [FromBody] CoordinatesDto coords)
         {
-            var shelter = await _context.Shelters.FindAsync(id);
-            if (shelter == null) return NotFound();
-
-            shelter.Latitude = coords.Latitude;
-            shelter.Longitude = coords.Longitude;
-            await _context.SaveChangesAsync();
-            return NoContent();
+            var response = await _shelters.UpdateShelterCoordinates(id, coords.Latitude, coords.Longitude);
+            return MapResponse(response);
         }
 
         [HttpPatch("{id:int}/description")]
-        public async Task<IActionResult> UpdateShelterDescription(int id, [FromBody] string description)
+        public async Task<ActionResult<Shelter>> UpdateShelterDescription(int id, [FromBody] string description)
         {
-            var shelter = await _context.Shelters.FindAsync(id);
-            if (shelter == null) return NotFound();
-
-            shelter.Description = description;
-            await _context.SaveChangesAsync();
-            return NoContent();
+            var response = await _shelters.UpdateShelterDescription(id, description);
+            return MapResponse(response);
         }
 
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteShelter(int id)
+        public async Task<ActionResult<Shelter>> DeleteShelter(int id)
         {
-            var shelter = await _context.Shelters.FindAsync(id);
-            if (shelter == null) return NotFound();
+            var response = await _shelters.DeleteShelter(id);
+            return MapResponse(response);
+        }
 
-            _context.Shelters.Remove(shelter);
-            await _context.SaveChangesAsync();
-            return NoContent();
+
+
+        private ActionResult<T> MapResponse<T>(GlobalResponse<T> response, bool created = false) where T : class
+        {
+            return response.Code switch
+            {
+                "200" => Ok(response),
+                "201" => created ? CreatedAtAction(nameof(GetShelter), new { id = (response.Data as Shelter)?.Id }, response) : Ok(response),
+                "400" => BadRequest(response),
+                "404" => NotFound(response),
+                _ => StatusCode(500, response)
+            };
         }
     }
 }

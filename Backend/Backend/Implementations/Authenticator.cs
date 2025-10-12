@@ -29,10 +29,7 @@ namespace Backend.Implementations
                     .Where(u => u.Email == email && u.Password == password)
                     .FirstOrDefaultAsync();
 
-                if (user == null)
-                {
-                    return GlobalResponse<dynamic>.Fault("Usuario no encontrado", "404", null);
-                }
+                if (user == null) return GlobalResponse<dynamic>.Fault("Usuario no encontrado", "404", null);
 
                 var token = GenerateJwtToken(user);
 
