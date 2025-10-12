@@ -11,22 +11,22 @@
         public interface IShelters
         {
             // Get
-            Task<GlobalResponse<IEnumerable<dynamic>>> GetShelters();
-            Task<GlobalResponse<dynamic>> GetShelter(int id);
+            Task<GlobalResponse<IEnumerable<Shelter>>> GetShelters();
+            Task<GlobalResponse<Shelter>> GetShelter(int id);
 
             // Post
-            Task<GlobalResponse<dynamic>> CreateShelter(Shelter shelter);
+            Task<GlobalResponse<Shelter>> CreateShelter(Shelter shelter);
 
             // Put
-            Task<GlobalResponse<dynamic>> UpdateShelter(Shelter shelter);
+            Task<GlobalResponse<Shelter>> UpdateShelter(Shelter shelter);
 
             // Patch
-            Task<GlobalResponse<dynamic>> UpdateShelterName(int id, string name);
-            Task<GlobalResponse<dynamic>> UpdateShelterAddress(int id, string address);
-            Task<GlobalResponse<dynamic>> UpdateShelterCoordinates(int id, decimal latitude, decimal longitude);
-            Task<GlobalResponse<dynamic>> UpdateShelterDescription(int id, string description);
+            Task<GlobalResponse<Shelter>> UpdateShelterName(int id, string name);
+            Task<GlobalResponse<Shelter>> UpdateShelterAddress(int id, string address);
+            Task<GlobalResponse<Shelter>> UpdateShelterCoordinates(int id, decimal latitude, decimal longitude);
+            Task<GlobalResponse<Shelter>> UpdateShelterDescription(int id, string description);
 
             // Delete
-            Task<GlobalResponse<dynamic>> DeleteShelter(int id);
+            Task<GlobalResponse<Shelter>> DeleteShelter(int id);
         }
     }

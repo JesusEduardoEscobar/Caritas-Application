@@ -11,6 +11,11 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();       // Elimina los providers predeterminados
+builder.Logging.AddConsole();           // Muestra logs en consola
+builder.Logging.AddDebug();             // Muestra logs en la ventana de Debug de Visual Studio
+builder.Logging.SetMinimumLevel(LogLevel.Warning); // Nivel mínimo
+
 // Add services to the container.
 builder.Services.AddDbContext<NeonTechDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
