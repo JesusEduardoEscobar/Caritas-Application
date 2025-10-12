@@ -7,13 +7,13 @@ import { ChevronLeft, ChevronRight, Calendar, Filter } from 'lucide-react';
 
 // Mock data for calendar events
 const calendarEvents = [
-  { id: 1, date: '2024-01-15', bedNumber: '101', patient: 'Juan Pérez', service: 'Urgencias', duration: 3, status: 'occupied' },
-  { id: 2, date: '2024-01-14', bedNumber: '201', patient: 'María García', service: 'Cirugía', duration: 6, status: 'occupied' },
-  { id: 3, date: '2024-01-16', bedNumber: '202', patient: 'Carlos López', service: 'Cirugía', duration: 3, status: 'reserved' },
-  { id: 4, date: '2024-01-17', bedNumber: '301', patient: 'Ana Rodríguez', service: 'Medicina General', duration: 5, status: 'reserved' },
+  { id: 1, date: '2024-01-15', bedNumber: '101', pilgrim: 'Peregrino A', service: 'Hospedaje', duration: 3, status: 'occupied' },
+  { id: 2, date: '2024-01-14', bedNumber: '201', pilgrim: 'Peregrino B', service: 'Hospedaje', duration: 6, status: 'occupied' },
+  { id: 3, date: '2024-01-16', bedNumber: '202', pilgrim: 'Peregrino C', service: 'Hospedaje', duration: 3, status: 'reserved' },
+  { id: 4, date: '2024-01-17', bedNumber: '301', pilgrim: 'Peregrino D', service: 'Hospedaje', duration: 5, status: 'reserved' },
 ];
 
-const services = ['Todos', 'Urgencias', 'Cirugía', 'Medicina General', 'Pediatría'];
+const services = ['Todos', 'Hospedaje', 'Comida', 'Regaderas', 'Lavandería', 'Enfermería'];
 
 const months = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -183,10 +183,10 @@ export function CalendarView() {
                               className={`text-xs p-1 rounded border ${getStatusColor(event.status)}`}
                             >
                               <div className="truncate">
-                                Cama {event.bedNumber}
+                                {event.service === 'Hospedaje' ? `Cama ${event.bedNumber}` : event.service}
                               </div>
                               <div className="truncate text-xs opacity-75">
-                                {event.patient}
+                                {event.pilgrim}
                               </div>
                             </div>
                           ))}
@@ -207,11 +207,11 @@ export function CalendarView() {
             <div className="flex flex-wrap gap-4 pt-4 border-t">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-red-100 border border-red-300 rounded"></div>
-                <span className="text-sm">Ocupada</span>
+                <span className="text-sm">En uso</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-yellow-100 border border-yellow-300 rounded"></div>
-                <span className="text-sm">Reservada</span>
+                <span className="text-sm">Reservado</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
@@ -242,17 +242,19 @@ export function CalendarView() {
                   <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">Cama {event.bedNumber}</Badge>
+                        <Badge variant="outline">
+                          {event.service === 'Hospedaje' ? `Cama ${event.bedNumber}` : `${event.service} #${event.bedNumber}`}
+                        </Badge>
                         <Badge variant="secondary">{event.service}</Badge>
                       </div>
-                      <p className="mt-1">{event.patient}</p>
+                      <p className="mt-1">{event.pilgrim}</p>
                       <p className="text-sm text-muted-foreground">
                         {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()} 
                         ({event.duration} días)
                       </p>
                     </div>
                     <Badge variant={event.status === 'occupied' ? 'destructive' : 'secondary'}>
-                      {event.status === 'occupied' ? 'Ocupada' : 'Reservada'}
+                      {event.status === 'occupied' ? 'En uso' : 'Reservado'}
                     </Badge>
                   </div>
                 );

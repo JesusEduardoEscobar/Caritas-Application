@@ -15,10 +15,11 @@ const stats = {
 };
 
 const bedsByService = [
-  { service: 'Lavanderia', total: 15, occupied: 12, available: 3 },
-  { service: 'Cocina', total: 20, occupied: 15, available: 5 },
-  { service: 'Ducha', total: 10, occupied: 4, available: 6 },
-  { service: 'Doctor', total: 5, occupied: 0, available: 5 }
+  { service: 'Hospedaje', total: 50, inUse: 31, reserved: 8, available: 11 },
+  { service: 'Comida', total: 50, inUse: 38, reserved: 5, available: 7 },
+  { service: 'Regaderas', total: 10, inUse: 6, reserved: 2, available: 2 },
+  { service: 'Lavandería', total: 8, inUse: 3, reserved: 2, available: 3 },
+  { service: 'Enfermería', total: 5, inUse: 2, reserved: 1, available: 2 }
 ];
 
 export function DashboardStats() {
@@ -89,43 +90,60 @@ export function DashboardStats() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Camas por Servicio</CardTitle>
+          <CardTitle>Uso de Servicios de la Posada del Peregrino</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {bedsByService.map((service) => (
-              <div key={service.service} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium">{service.service}</h4>
-                  <div className="flex gap-2">
-                    <Badge variant="outline">
-                      {service.occupied}/{service.total}
-                    </Badge>
-                    {service.available === 0 ? (
-                      <Badge variant="destructive">Completo</Badge>
-                    ) : service.available <= 2 ? (
-                      <Badge variant="secondary">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        Pocas disponibles
+          <div className="space-y-6">
+            {bedsByService.map((service) => {
+              const totalUsed = service.inUse + service.reserved;
+              const usagePercent = (totalUsed / service.total) * 100;
+              
+              return (
+                <div key={service.service} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">{service.service}</h4>
+                    <div className="flex gap-2">
+                      <Badge variant="outline" className="text-base px-3">
+                        {totalUsed}/{service.total}
                       </Badge>
-                    ) : (
-                      <Badge variant="default">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Disponible
-                      </Badge>
-                    )}
+                      {service.available === 0 ? (
+                        <Badge variant="destructive">Completo</Badge>
+                      ) : service.available <= 3 ? (
+                        <Badge variant="secondary">
+                          <AlertCircle className="h-3 w-3 mr-1" />
+                          Poca capacidad
+                        </Badge>
+                      ) : (
+                        <Badge variant="default">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Disponible
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <Progress 
+                    value={usagePercent} 
+                    className="h-3"
+                  />
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">En uso</p>
+                      <p className="text-lg font-medium text-red-600">{service.inUse}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Reservadas</p>
+                      <p className="text-lg font-medium text-yellow-600">{service.reserved}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Disponibles</p>
+                      <p className="text-lg font-medium text-green-600">{service.available}</p>
+                    </div>
                   </div>
                 </div>
-                <Progress 
-                  value={(service.occupied / service.total) * 100} 
-                  className="h-2"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Ocupadas: {service.occupied}</span>
-                  <span>Disponibles: {service.available}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -142,7 +160,7 @@ export function DashboardStats() {
                   <div>
                     <p>Reserva #{1001 + i}</p>
                     <p className="text-xs text-muted-foreground">
-                      Usuario: Paciente {i + 1}
+                      Peregrino {i + 1}
                     </p>
                   </div>
                   <Badge variant="outline">Pendiente QR</Badge>
@@ -154,13 +172,13 @@ export function DashboardStats() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Próximos Vencimientos</CardTitle>
+            <CardTitle>Próximos Vencimientos de Hospedaje</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div>
-                  <p>Cama 12 - Urgencias</p>
+                  <p>Cama 12 - Hospedaje</p>
                   <p className="text-xs text-muted-foreground">
                     Vence en 2 horas
                   </p>
@@ -169,7 +187,7 @@ export function DashboardStats() {
               </div>
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div>
-                  <p>Cama 25 - Cirugía</p>
+                  <p>Cama 25 - Hospedaje</p>
                   <p className="text-xs text-muted-foreground">
                     Vence mañana
                   </p>

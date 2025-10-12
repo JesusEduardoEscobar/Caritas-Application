@@ -13,9 +13,9 @@ import { Calendar, Search, Plus, QrCode, Check, X, Clock, AlertCircle } from 'lu
 const reservationData = [
   { 
     id: 1001, 
-    patient: 'Juan Pérez', 
+    pilgrim: 'Peregrino A', 
     bedNumber: '101',
-    service: 'Urgencias',
+    service: 'Hospedaje',
     checkIn: '2024-01-15',
     checkOut: '2024-01-18',
     status: 'confirmed',
@@ -24,9 +24,9 @@ const reservationData = [
   },
   { 
     id: 1002, 
-    patient: 'María García', 
+    pilgrim: 'Peregrino B', 
     bedNumber: '201',
-    service: 'Cirugía',
+    service: 'Hospedaje',
     checkIn: '2024-01-14',
     checkOut: '2024-01-20',
     status: 'pending',
@@ -35,9 +35,9 @@ const reservationData = [
   },
   { 
     id: 1003, 
-    patient: 'Carlos López', 
+    pilgrim: 'Peregrino C', 
     bedNumber: '202',
-    service: 'Cirugía',
+    service: 'Comida',
     checkIn: '2024-01-16',
     checkOut: '2024-01-19',
     status: 'pending',
@@ -46,9 +46,9 @@ const reservationData = [
   },
   { 
     id: 1004, 
-    patient: 'Ana Rodríguez', 
-    bedNumber: '301',
-    service: 'Medicina General',
+    pilgrim: 'Peregrino D', 
+    bedNumber: '1',
+    service: 'Regaderas',
     checkIn: '2024-01-17',
     checkOut: '2024-01-22',
     status: 'cancelled',
@@ -57,7 +57,7 @@ const reservationData = [
   }
 ];
 
-const services = ['Todos', 'Urgencias', 'Cirugía', 'Medicina General', 'Pediatría'];
+const services = ['Todos', 'Hospedaje', 'Comida', 'Regaderas', 'Lavandería', 'Enfermería'];
 const statuses = ['Todos', 'pending', 'confirmed', 'cancelled', 'completed'];
 
 const statusLabels = {
@@ -81,7 +81,7 @@ export function ReservationManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const filteredReservations = reservationData.filter(reservation => {
-    const matchesSearch = reservation.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = reservation.pilgrim.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          reservation.bedNumber.includes(searchTerm) ||
                          reservation.id.toString().includes(searchTerm);
     const matchesService = selectedService === 'Todos' || reservation.service === selectedService;
@@ -140,15 +140,15 @@ export function ReservationManagement() {
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Paciente</Label>
+                <Label>Peregrino</Label>
                 <Select>
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar paciente" />
+                    <SelectValue placeholder="Seleccionar peregrino" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">Juan Pérez</SelectItem>
-                    <SelectItem value="2">María García</SelectItem>
-                    <SelectItem value="3">Carlos López</SelectItem>
+                    <SelectItem value="1">Peregrino A</SelectItem>
+                    <SelectItem value="2">Peregrino B</SelectItem>
+                    <SelectItem value="3">Peregrino C</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -209,7 +209,7 @@ export function ReservationManagement() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Paciente, cama o ID..."
+                  placeholder="Peregrino, cama o ID..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -260,8 +260,8 @@ export function ReservationManagement() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Paciente</TableHead>
-                <TableHead>Cama</TableHead>
+                <TableHead>Peregrino</TableHead>
+                <TableHead>Recurso</TableHead>
                 <TableHead>Servicio</TableHead>
                 <TableHead>Fechas</TableHead>
                 <TableHead>Estado</TableHead>
@@ -273,10 +273,10 @@ export function ReservationManagement() {
               {filteredReservations.map(reservation => (
                 <TableRow key={reservation.id}>
                   <TableCell>#{reservation.id}</TableCell>
-                  <TableCell>{reservation.patient}</TableCell>
+                  <TableCell>{reservation.pilgrim}</TableCell>
                   <TableCell>
                     <Badge variant="outline">
-                      Cama {reservation.bedNumber}
+                      {reservation.service === 'Hospedaje' ? `Cama ${reservation.bedNumber}` : `#${reservation.bedNumber}`}
                     </Badge>
                   </TableCell>
                   <TableCell>{reservation.service}</TableCell>

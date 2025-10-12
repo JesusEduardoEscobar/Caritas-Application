@@ -14,47 +14,48 @@ import { Users, Plus, Search, Edit, Trash2, Mail, Phone } from 'lucide-react';
 const userData = [
   { 
     id: 1, 
-    name: 'Juan Pérez', 
-    email: 'juan.perez@email.com', 
+    name: 'Peregrino A', 
+    email: 'peregrinoA@email.com', 
     phone: '+1234567890', 
-    economi: 'Paciente', 
+    role: 'Peregrino', 
     status: 'Activo',
     createdAt: '2024-01-10',
     reservations: 3
   },
   { 
     id: 2, 
-    name: 'María García', 
-    email: 'maria.garcia@email.com', 
+    name: 'Peregrino B', 
+    email: 'peregrinoB@email.com', 
     phone: '+1234567891', 
-    economi: 'Paciente', 
+    role: 'Peregrino', 
     status: 'Activo',
     createdAt: '2024-01-08',
     reservations: 1
   },
   { 
     id: 3, 
-    name: 'Dr. Carlos López', 
-    email: 'carlos.lopez@hospital.com', 
+    name: 'Peregrino C', 
+    email: 'peregrinoC@email.com', 
     phone: '+1234567892', 
-    economi: 'Médico', 
+    role: 'Peregrino', 
     status: 'Activo',
     createdAt: '2024-01-05',
-    reservations: 0
+    reservations: 2
   },
   { 
     id: 4, 
-    name: 'Ana Rodríguez', 
-    email: 'ana.rodriguez@email.com', 
+    name: 'Peregrino D', 
+    email: 'peregrinoD@email.com', 
     phone: '+1234567893', 
-    economi: 'Paciente', 
+    role: 'Peregrino', 
     status: 'Inactivo',
     createdAt: '2024-01-03',
     reservations: 0
   }
 ];
 
-const economics = ['Ninguno', 'Basico', 'Urgente', 'Especial'];
+const roles = ['Peregrino', 'Voluntario', 'Administrador'];
+const statuses = ['Activo', 'Inactivo'];
 
 export function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -65,13 +66,14 @@ export function UserManagement() {
     name: '',
     email: '',
     phone: '',
-    economi: 'Ninguno',
+    role: 'Peregrino',
+    status: 'Activo'
   });
 
   const filteredUsers = userData.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = selectedRole === 'Todos' || user.economi === selectedRole;
+    const matchesRole = selectedRole === 'Todos' || user.role === selectedRole;
     const matchesStatus = selectedStatus === 'Todos' || user.status === selectedStatus;
     
     return matchesSearch && matchesRole && matchesStatus;
@@ -85,22 +87,30 @@ export function UserManagement() {
       name: '',
       email: '',
       phone: '',
-      economi: 'Basico'
+      role: 'Peregrino',
+      status: 'Activo'
     });
   };
 
+  const getStatusBadge = (status: string) => {
+    return (
+      <Badge variant={status === 'Activo' ? 'default' : 'secondary'}>
+        {status}
+      </Badge>
+    );
+  };
 
-  const getRoleBadge = (economi: string) => {
-    const econimicLevel = {
-      'Ninguno': 'outline',
-      'Basico': 'default',
-      'Urgente': 'destructive',
-      'Especial': 'secondary'
+  const getRoleBadge = (role: string) => {
+    const roleColors = {
+      'Paciente': 'outline',
+      'Médico': 'default',
+      'Administrador': 'destructive',
+      'Enfermero': 'secondary'
     } as const;
     
     return (
-      <Badge variant={econimicLevel[economi as keyof typeof econimicLevel]}>
-        {economi}
+      <Badge variant={roleColors[role as keyof typeof roleColors]}>
+        {role}
       </Badge>
     );
   };
@@ -152,17 +162,29 @@ export function UserManagement() {
                 />
               </div>
               
-              
-
-              <div className='space-y-2'>
-                <Label htmlFor="economi">Necesidad economica</Label>
-                <Select value={newUser.economi} onValueChange={(value: string) => setNewUser(prev => ({ ...prev, economi: value }))}>
+              <div className="space-y-2">
+                <Label htmlFor="role">Rol</Label>
+                <Select value={newUser.role} onValueChange={(value: string) => setNewUser(prev => ({ ...prev, role: value }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {economics.map(economi => (
-                      <SelectItem key={economi} value={economi}>{economi}</SelectItem>
+                    {roles.map(role => (
+                      <SelectItem key={role} value={role}>{role}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="status">Estado</Label>
+                <Select value={newUser.status} onValueChange={(value: string) => setNewUser(prev => ({ ...prev, status: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statuses.map(status => (
+                      <SelectItem key={status} value={status}>{status}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -208,15 +230,30 @@ export function UserManagement() {
             </div>
 
             <div className="space-y-2">
-              <Label>Necesidad economica</Label>
+              <Label>Rol</Label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Todos">Todos los nivels de necesidad</SelectItem>
-                  {economics.map(economi => (
-                    <SelectItem key={economi} value={economi}>{economi}</SelectItem>
+                  <SelectItem value="Todos">Todos los roles</SelectItem>
+                  {roles.map(role => (
+                    <SelectItem key={role} value={role}>{role}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Estado</Label>
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Todos">Todos los estados</SelectItem>
+                  {statuses.map(status => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -235,7 +272,8 @@ export function UserManagement() {
               <TableRow>
                 <TableHead>Usuario</TableHead>
                 <TableHead>Contacto</TableHead>
-                <TableHead>Necesidad economica</TableHead>
+                <TableHead>Rol</TableHead>
+                <TableHead>Estado</TableHead>
                 <TableHead>Reservas</TableHead>
                 <TableHead>Fecha Registro</TableHead>
                 <TableHead>Acciones</TableHead>
@@ -270,7 +308,10 @@ export function UserManagement() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {getRoleBadge(user.economi)}
+                    {getRoleBadge(user.role)}
+                  </TableCell>
+                  <TableCell>
+                    {getStatusBadge(user.status)}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">

@@ -6,16 +6,16 @@ import { AuthProvider, useAuth } from './components/auth/AuthProvider';
 import { useDeviceDetection } from './hooks/useDeviceDetection';
 
 function AppContent() {
-  const { admin, isLoading } = useAuth();
+  const { admin, isLoading, isAuthenticated } = useAuth();
   const { isMobile } = useDeviceDetection();
   const [showQRMode, setShowQRMode] = useState(false);
 
   // Auto-switch to QR mode on mobile devices
   useEffect(() => {
-    if (isMobile && admin) {
+    if (isMobile && isAuthenticated) {
       setShowQRMode(true);
     }
-  }, [isMobile, admin]);
+  }, [isMobile, isAuthenticated]);
 
   // Show loading state
   if (isLoading) {
@@ -29,8 +29,8 @@ function AppContent() {
     );
   }
 
-  // Show login form if not authenticated
-  if (!admin) {
+  // Show login form if not authenticated (no valid JWT token)
+  if (!isAuthenticated || !admin) {
     return <LoginForm />;
   }
 
