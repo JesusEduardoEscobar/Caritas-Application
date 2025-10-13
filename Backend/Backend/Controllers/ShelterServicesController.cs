@@ -1,10 +1,13 @@
+using Backend.Dtos;
+using Backend.Infraestructure.Implementations;
+using Backend.Infraestructure.Interfaces;
+using Backend.Infraestructure.Models;
 using Backend.Infrastructure.Database;
 using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
-using Backend.Dtos;
-using Backend.Infraestructure.Models;
 
 namespace Backend.Controllers
 {
@@ -12,101 +15,82 @@ namespace Backend.Controllers
     [Route("api/[controller]")]
     public class ShelterServicesController : ControllerBase
     {
-        private readonly NeonTechDbContext _context;
+        private readonly IShelterServices _shelterServices;
 
-        public ShelterServicesController(NeonTechDbContext context)
+        public ShelterServicesController(IShelterServices shelterServices)
         {
-            _context = context;
+            _shelterServices = shelterServices;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ShelterService>>> GetAllShelterServices(int shelterId, int? serviceId)
+        public async Task<ActionResult<IEnumerable<ShelterService>>> GetShelterServices()
         {
-            var shelterServices = await _context.ShelterServices.ToListAsync();
-            return Ok(shelterServices);
+            var response = await _shelterServices.GetShelterServices();
+            return MapResponse(response);
         }
 
-        [HttpGet("{shelterId:int}/{serviceId:int?}")]
-        public async Task<ActionResult<IEnumerable<ShelterService>>> GetShelterServices(int shelterId, int? serviceId)
+        [HttpGet("{shelterId:int}")]
+        public async Task<ActionResult<IEnumerable<ShelterService>>> GetShelterServicesByShelter(int shelterId)
         {
-            var query = _context.ShelterServices.AsQueryable();
+            var response = await _shelterServices.GetShelterServicesByShelter(shelterId);
+            return MapResponse(response);
+        }
 
-            query = query.Where(ss => ss.ShelterId == shelterId);
-
-            if (serviceId.HasValue)
-                query = query.Where(ss => ss.ServiceId == serviceId.Value);
-
-            var result = await query.ToListAsync();
-            return Ok(result);
+        [HttpGet("{shelterId:int}/{serviceId:int}")]
+        public async Task<ActionResult<ShelterService>> GetShelterService(int shelterId, int serviceId)
+        {
+            var response = await _shelterServices.GetShelterService(shelterId, serviceId);
+            return MapResponse(response);
         }
 
         [HttpPost]
-        public async Task<ActionResult<ShelterService>> CreateShelterService([FromBody] ShelterService dto)
+        public async Task<ActionResult<ShelterService>> CreateShelterService([FromBody] ShelterServiceCreateDto shelterServiceDto)
         {
-            bool exists = await _context.ShelterServices
-                .AnyAsync(ss => ss.ShelterId == dto.ShelterId && ss.ServiceId == dto.ServiceId);
+            if (!ModelState.IsValid)
+                return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            if (exists) return BadRequest("Service already assigned to this shelter.");
-
-            _context.ShelterServices.Add(dto);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetShelterServices), new { shelterId = dto.ShelterId, serviceId = dto.ServiceId }, dto);
+            var response = await _shelterServices.CreateShelterService(shelterServiceDto);
+            return MapResponse(response, created: true);
         }
 
-        [HttpPatch("{shelterId:int}/{serviceId:int}/price")]
-        public async Task<IActionResult> UpdatePrice(int shelterId, int serviceId, [FromBody] decimal price)
+        [HttpPut("{shelterId:int}/{serviceId:int}")]
+        public async Task<ActionResult<ShelterService>> UpdateShelterService(int shelterId, int serviceId, [FromBody] ShelterServiceUpdateDto shelterServiceDto)
         {
-            var ss = await _context.ShelterServices.FindAsync(shelterId, serviceId);
-            if (ss == null) return NotFound();
+            if (!ModelState.IsValid)
+                return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            ss.Price = price;
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
+            if (shelterId != shelterServiceDto.ShelterId || serviceId != shelterServiceDto.ServiceId)
+                return BadRequest(GlobalResponse<string>.Fault("Los IDs del cuerpo no coincide con la URL", "400", null));
 
-        [HttpPatch("{shelterId:int}/{serviceId:int}/availability")]
-        public async Task<IActionResult> UpdateAvailability(int shelterId, int serviceId, [FromBody] bool isAvailable)
-        {
-            var ss = await _context.ShelterServices.FindAsync(shelterId, serviceId);
-            if (ss == null) return NotFound();
-
-            ss.IsAvailable = isAvailable;
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
-
-        [HttpPatch("{shelterId:int}/{serviceId:int}/description")]
-        public async Task<IActionResult> UpdateDescriptione(int shelterId, int serviceId, [FromBody] string description)
-        {
-            var ss = await _context.ShelterServices.FindAsync(shelterId, serviceId);
-            if (ss == null) return NotFound();
-
-            ss.Description = description;
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
-
-        [HttpPatch("{shelterId:int}/{serviceId:int}/capacity")]
-        public async Task<IActionResult> UpdatePrice(int shelterId, int serviceId, [FromBody] int capacity)
-        {
-            var ss = await _context.ShelterServices.FindAsync(shelterId, serviceId);
-            if (ss == null) return NotFound();
-
-            ss.Capacity = capacity;
-            await _context.SaveChangesAsync();
-            return NoContent();
+            var response = await _shelterServices.UpdateShelterService(shelterServiceDto);
+            return MapResponse(response);
         }
 
         [HttpDelete("{shelterId:int}/{serviceId:int}")]
-        public async Task<IActionResult> DeleteShelterService(int shelterId, int serviceId)
+        public async Task<ActionResult<ShelterService>> DeleteShelterService(int shelterId, int serviceId)
         {
-            var ss = await _context.ShelterServices.FindAsync(shelterId, serviceId);
-            if (ss == null) return NotFound();
+            var response = await _shelterServices.DeleteShelterService(shelterId, serviceId);
+            return MapResponse(response);
+        }
 
-            _context.ShelterServices.Remove(ss);
-            await _context.SaveChangesAsync();
-            return NoContent();
+
+
+        private ActionResult<T> MapResponse<T>(GlobalResponse<T> response, bool created = false) where T : class
+        {
+            if (response.Code == "201" && created)
+            {
+                if (response.Data is ShelterService ss)
+                    return CreatedAtAction("GetShelterService", new { shelterId = ss.ShelterId, serviceId = ss.ServiceId }, response);
+
+                return Ok(response);
+            }
+            return response.Code switch
+            {
+                "200" => Ok(response),
+                "400" => BadRequest(response),
+                "404" => NotFound(response),
+                _ => StatusCode(500, response)
+            };
         }
     }
 }

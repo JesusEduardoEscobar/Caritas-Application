@@ -13,6 +13,6 @@ namespace Backend.Infraestructure.Objects
         string Code { get; set; }
         string Message { get; set; }
 
-        T Data { get; set; }
+        T? Data { get; set; }
     }
 }

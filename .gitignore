@@ -12,8 +12,8 @@
 /Backend/Backend/obj/
 /Backend/Backend.Infrastructure/bin/
 /Backend/Backend.Infrastructure/obj/
-/Backend/Backend.Infraestructure/bin/
-/Backend/Backend.Infraestructure/obj/
+/Backend/Backend.Tests/bin/
+/Backend/Backend.Tests/obj/
 
 # Ignorar archivos temporales y de usuario
 *.user

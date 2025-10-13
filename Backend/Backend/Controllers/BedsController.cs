@@ -1,3 +1,4 @@
+using Backend.Dtos;
 using Backend.Implementations;
 using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Interfaces;
@@ -13,174 +14,87 @@ using System;
 
 namespace Backend.Controllers
 {
-    [Authorize]
+
     [ApiController]
     [Route("api/[controller]")]
     public class BedsController : ControllerBase
     {
-        private readonly NeonTechDbContext _context;
         private readonly IBeds _beds;
 
-        public BedsController(NeonTechDbContext context, IBeds beds)
+        public BedsController(IBeds beds)
         {
-            _context = context;
             _beds = beds;
         }
 
-        #region GET
-
         [HttpGet]
-        public async Task<IActionResult> GetBeds()
+        public async Task<ActionResult<IEnumerable<Bed>>> GetBeds([FromQuery] int? shelterId = null, [FromQuery] bool? available = null)
         {
-            try
-            {
-                var response = GlobalResponse<string>.Fault("Sin Implementación", "-1", null);
-                return StatusCode(501, response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
+            var response = await _beds.GetBeds(shelterId, available);
+            return MapResponse(response);
         }
 
-        [HttpGet("available")]
-        public async Task<IActionResult> GetAvailableBeds()
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<Bed>> GetBed(int id)
         {
-            try
-            {
-                var response = GlobalResponse<string>.Fault("Sin Implementación", "-1", null);
-                return StatusCode(501, response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
+            var response = await _beds.GetBed(id);
+            return MapResponse(response);
         }
-
-        [HttpGet("shelter/{shelterId:int}")]
-        public async Task<IActionResult> GetBedsByShelter(int shelterId)
-        {
-            try
-            {
-                var response = GlobalResponse<string>.Fault("Sin Implementación", "-1", null);
-                return StatusCode(501, response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
-        }
-
-        [HttpGet("shelter/{shelterId:int}/available")]
-        public async Task<IActionResult> GetAvailableBedsByShelter(int shelterId)
-        {
-            try
-            {
-                var response = GlobalResponse<string>.Fault("Sin Implementación", "-1", null);
-                return StatusCode(501, response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
-        }
-
-        #endregion
-
-        #region POST
 
         [HttpPost]
-        public async Task<IActionResult> CreateBed([FromBody] Bed bed)
+        public async Task<ActionResult<Bed>> CreateBed([FromBody] BedCreateDto bedDto)
         {
-            try
-            {
-                var response = GlobalResponse<string>.Fault("Sin Implementación", "-1", null);
-                return StatusCode(501, response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
+
+            var response = await _beds.CreateBed(bedDto);
+            return MapResponse(response, created: true);
         }
 
-        #endregion
-
-        #region PUT
-
-        [HttpPut("{shelterId:int}")]
-        public async Task<IActionResult> UpdateBed([FromBody] Bed bed)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<Bed>> UpdateBed(int id, [FromBody] BedUpdateDto bedDto)
         {
-            try
-            {
-                var response = GlobalResponse<string>.Fault("Sin Implementación", "-1", null);
-                return StatusCode(501, response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
+
+            if (id != bedDto.Id)
+                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
+
+            var response = await _beds.UpdateBed(bedDto);
+            return MapResponse(response);
         }
 
-        #endregion
-
-        #region PATCH
-
-        [HttpPatch("{shelterId:int}/number")]
-        public async Task<IActionResult> UpdateBedNumber(int id, [FromBody] int bedNumber)
+        [HttpPatch("{id:int}/availability")]
+        public async Task<ActionResult<Bed>> UpdateBedAvailability(int id, [FromBody] BedUpdateAvailabilityDto bedDto)
         {
-            try
-            {
-                var response = GlobalResponse<string>.Fault("Sin Implementación", "-1", null);
-                return StatusCode(501, response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
+
+            if (id != bedDto.Id)
+                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
+
+            var response = await _beds.UpdateBedAvailability(bedDto);
+            return MapResponse(response);
         }
 
-        [HttpPatch("{shelterId:int}/availability")]
-        public async Task<IActionResult> UpdateBedAvailability(int id, [FromBody] bool isAvailable)
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<Bed>> DeleteBed(int id)
         {
-            try
-            {
-                var response = GlobalResponse<string>.Fault("Sin Implementación", "-1", null);
-                return StatusCode(501, response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
+            var response = await _beds.DeleteBed(id);
+            return MapResponse(response);
         }
 
-        #endregion
 
-        #region DELETE
 
-        [HttpDelete("{shelterId:int}")]
-        public async Task<IActionResult> DeleteBed(int id)
+        private ActionResult<T> MapResponse<T>(GlobalResponse<T> response, bool created = false) where T : class
         {
-            try
+            return response.Code switch
             {
-                var response = GlobalResponse<string>.Fault("Sin Implementación", "-1", null);
-                return StatusCode(501, response);
-            }
-            catch (Exception ex)
-            {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
-                return StatusCode(500, errorResponse);
-            }
+                "200" => Ok(response),
+                "201" => created ? CreatedAtAction(nameof(GetBed), new { id = (response.Data as Bed)?.Id }, response) : Ok(response),
+                "400" => BadRequest(response),
+                "404" => NotFound(response),
+                _ => StatusCode(500, response)
+            };
         }
-
-        #endregion
-
     }
 }

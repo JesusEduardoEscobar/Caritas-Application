@@ -43,64 +43,25 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Shelter>> CreateShelter([FromBody] ShelterCreateDto dto)
+        public async Task<ActionResult<Shelter>> CreateShelter([FromBody] ShelterCreateDto shelterDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            var shelter = new Shelter
-            {
-                Name = dto.Name,
-                Address = dto.Address,
-                Latitude = dto.Latitude,
-                Longitude = dto.Longitude,
-                Phone = dto.Phone,
-                Capacity = dto.Capacity,
-                Description = dto.Description,
-                Occupancy = dto.Occupancy,
-            };
-
-            var response = await _shelters.CreateShelter(shelter);
+            var response = await _shelters.CreateShelter(shelterDto);
             return MapResponse(response, created: true);
         }
 
-
-
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<Shelter>> UpdateShelter(int id, Shelter shelter)
+        public async Task<ActionResult<Shelter>> UpdateShelter(int id, [FromBody] ShelterUpdateDto shelterDto)
         {
-            if (id != shelter.Id)
+            if (!ModelState.IsValid)
+                return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
+
+            if (id != shelterDto.Id)
                 return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
 
-            var response = await _shelters.UpdateShelter(shelter);
-            return MapResponse(response);
-        }
-
-        [HttpPatch("{id:int}/name")]
-        public async Task<ActionResult<Shelter>> UpdateShelterName(int id, [FromBody] string name)
-        {
-            var response = await _shelters.UpdateShelterName(id, name);
-            return MapResponse(response);
-        }
-
-        [HttpPatch("{id:int}/address")]
-        public async Task<ActionResult<Shelter>> UpdateShelterAddress(int id, [FromBody] string address)
-        {
-            var response = await _shelters.UpdateShelterName(id, address);
-            return MapResponse(response);
-        }
-
-        [HttpPatch("{id:int}/coordinates")]
-        public async Task<ActionResult<Shelter>> UpdateShelterCoordinates(int id, [FromBody] CoordinatesDto coords)
-        {
-            var response = await _shelters.UpdateShelterCoordinates(id, coords.Latitude, coords.Longitude);
-            return MapResponse(response);
-        }
-
-        [HttpPatch("{id:int}/description")]
-        public async Task<ActionResult<Shelter>> UpdateShelterDescription(int id, [FromBody] string description)
-        {
-            var response = await _shelters.UpdateShelterDescription(id, description);
+            var response = await _shelters.UpdateShelter(shelterDto);
             return MapResponse(response);
         }
 
