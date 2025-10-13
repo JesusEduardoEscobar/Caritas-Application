@@ -14,7 +14,7 @@ using System;
 
 namespace Backend.Controllers
 {
-    [Authorize]
+
     [ApiController]
     [Route("api/[controller]")]
     public class BedsController : ControllerBase
@@ -34,9 +34,9 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Bed>> GetBed(int shelterId)
+        public async Task<ActionResult<Bed>> GetBed(int id)
         {
-            var response = await _beds.GetBed(shelterId);
+            var response = await _beds.GetBed(id);
             return MapResponse(response);
         }
 

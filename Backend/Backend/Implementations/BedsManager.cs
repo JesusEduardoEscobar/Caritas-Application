@@ -88,6 +88,14 @@ namespace Backend.Implementations
                     return GlobalResponse<Bed>.Fault("Datos inválidos", "400", null);
                 }
 
+                bool shelterExists = await _context.Shelters
+                    .AnyAsync(s => s.Id == bedDto.ShelterId);
+                if (!shelterExists)
+                {
+                    _logger.LogWarning("El ShelterId {ShelterId} no existe.", bedDto.ShelterId);
+                    return GlobalResponse<Bed>.Fault($"El refugio con ID {bedDto.ShelterId} no existe.", "404", null);
+                }
+
                 var bed = new Bed
                 {
                     ShelterId = bedDto.ShelterId,
@@ -116,6 +124,17 @@ namespace Backend.Implementations
         {
             try
             {
+                if (bedDto.ShelterId != null)
+                {
+                    bool shelterExists = await _context.Shelters
+                        .AnyAsync(s => s.Id == bedDto.ShelterId);
+                    if (!shelterExists)
+                    {
+                        _logger.LogWarning("El ShelterId {ShelterId} no existe.", bedDto.ShelterId);
+                        return GlobalResponse<Bed>.Fault($"El refugio con ID {bedDto.ShelterId} no existe.", "404", null);
+                    }
+                }
+
                 var existing = await _context.Beds.FindAsync(bedDto.Id);
                 if (existing == null)
                 {
@@ -124,7 +143,7 @@ namespace Backend.Implementations
                 }
 
                 if (bedDto.ShelterId.HasValue) existing.ShelterId = bedDto.ShelterId.Value;
-                if (bedDto.BedNumber.HasValue) existing.BedNumber = bedDto.BedNumber.Value;
+                if (!string.IsNullOrEmpty(bedDto.BedNumber)) existing.BedNumber = bedDto.BedNumber;
                 if (bedDto.IsAvailable.HasValue) existing.IsAvailable = bedDto.IsAvailable.Value;
 
                 _context.Entry(existing).State = EntityState.Modified;

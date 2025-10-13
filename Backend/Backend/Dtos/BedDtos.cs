@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.RegularExpressions;
 
 namespace Backend.Dtos
 {
@@ -7,8 +8,8 @@ namespace Backend.Dtos
         [Required(ErrorMessage = "El Shelter ID es obligatorio")]
         public int ShelterId { get; set; }
 
-        [Range(0, int.MaxValue, ErrorMessage = "La capacidad debe ser mayor o igual a cero")]
-        public int BedNumber { get; set; }
+        [Required(ErrorMessage = "El número de cama es obligatorio")]
+        public string BedNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La disponibilidad es obligatorio")]
         public bool IsAvailable { get; set; }
@@ -20,10 +21,7 @@ namespace Backend.Dtos
         public int Id { get; set; }
 
         public int? ShelterId { get; set; }
-
-        [Range(0, int.MaxValue, ErrorMessage = "La capacidad debe ser mayor o igual a cero")]
-        public int? BedNumber { get; set; }
-
+        public string? BedNumber { get; set; }
         public bool? IsAvailable { get; set; }
     }
 
@@ -35,4 +33,6 @@ namespace Backend.Dtos
         [Required(ErrorMessage = "La disponibilidad es obligatoria")]
         public bool IsAvailable { get; set; }
     }
+
+
 }

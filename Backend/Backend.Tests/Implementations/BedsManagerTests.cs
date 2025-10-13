@@ -22,11 +22,11 @@ namespace Backend.Tests.Implementations
         private void PopulateDBContext(ref NeonTechDbContext context)
         {
             context.Beds.Add( TestEntry() );
-            context.Beds.Add(new Bed { Id = 2, ShelterId = 1, BedNumber = 102, IsAvailable = true });
-            context.Beds.Add(new Bed { Id = 3, ShelterId = 1, BedNumber = 103, IsAvailable = false });
-            context.Beds.Add(new Bed { Id = 4, ShelterId = 2, BedNumber = 101, IsAvailable = false });
-            context.Beds.Add(new Bed { Id = 5, ShelterId = 2, BedNumber = 102, IsAvailable = true });
-            context.Beds.Add(new Bed { Id = 6, ShelterId = 2, BedNumber = 103, IsAvailable = true });
+            context.Beds.Add(new Bed { Id = 2, ShelterId = 1, BedNumber = "102", IsAvailable = true });
+            context.Beds.Add(new Bed { Id = 3, ShelterId = 1, BedNumber = "103", IsAvailable = false });
+            context.Beds.Add(new Bed { Id = 4, ShelterId = 2, BedNumber = "101", IsAvailable = false });
+            context.Beds.Add(new Bed { Id = 5, ShelterId = 2, BedNumber = "102", IsAvailable = true });
+            context.Beds.Add(new Bed { Id = 6, ShelterId = 2, BedNumber = "103", IsAvailable = true });
             context.SaveChanges();
         }
 
@@ -36,7 +36,7 @@ namespace Backend.Tests.Implementations
             {
                 Id = 1,
                 ShelterId = 1,
-                BedNumber = 101,
+                BedNumber = "101",
                 IsAvailable = true
             };
         }
@@ -149,6 +149,8 @@ namespace Backend.Tests.Implementations
             var manager = CreateManagerWithDb(out var context);
 
             var bed = TestEntry();
+            context.Shelters.Add(new Shelter { Id = bed.Id });
+            await context.SaveChangesAsync();
 
             var bedDto = new BedCreateDto
             {
@@ -178,6 +180,8 @@ namespace Backend.Tests.Implementations
             var manager = CreateManagerWithDb(out var context);
 
             var bed = TestEntry();
+            context.Shelters.Add(new Shelter { Id = bed.Id });
+            await context.SaveChangesAsync();
 
             var bedDto = new BedUpdateDto
             {
@@ -200,13 +204,15 @@ namespace Backend.Tests.Implementations
 
             var bed = TestEntry();
             context.Beds.Add(bed);
+            context.Shelters.Add(new Shelter { Id = bed.Id });
+            context.Shelters.Add(new Shelter { Id = bed.Id+1 });
             await context.SaveChangesAsync();
 
             var bedDto = new BedUpdateDto
             {
                 Id = bed.Id,
                 ShelterId = bed.ShelterId + 1,
-                BedNumber = bed.BedNumber + 1,
+                BedNumber = "modified",
                 IsAvailable = !bed.IsAvailable
             };
 
@@ -230,6 +236,7 @@ namespace Backend.Tests.Implementations
 
             var bed = TestEntry();
             context.Beds.Add(bed);
+            context.Shelters.Add(new Shelter { Id = bed.Id });
             await context.SaveChangesAsync();
 
             var bedDto = new BedUpdateDto
