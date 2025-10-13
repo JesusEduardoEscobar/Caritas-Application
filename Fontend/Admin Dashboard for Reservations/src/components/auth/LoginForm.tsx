@@ -104,12 +104,6 @@ export function LoginForm() {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                 </Button>
-                
-                <div className="text-center text-sm text-muted-foreground">
-                  <p>Credenciales de prueba:</p>
-                  <p>Email: admin@test.com</p>
-                  <p>Contraseña: admin123</p>
-                </div>
               </form>
             </TabsContent>
           </Tabs>

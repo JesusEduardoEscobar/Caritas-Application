@@ -36,11 +36,12 @@ namespace Backend.Infrastructure.Database
                 entity.Property(s => s.Name).HasColumnName("name");
                 entity.Property(s => s.Password).HasColumnName("password");
                 entity.Property(s => s.Email).HasColumnName("email");
+                entity.Property(s => s.Phone).HasColumnName("phone");
                 entity.Property(s => s.Age).HasColumnName("age");
-                entity.Property(s => s.EconomicLevel).HasColumnName("economic_level");
+                entity.Property(s => s.EconomicLevel).HasColumnName("economic_level").HasConversion<string>();
                 entity.Property(s => s.Verified).HasColumnName("verified");
                 entity.Property(s => s.ShelterId).HasColumnName("shelter_id");
-                entity.Property(s => s.Role).HasColumnName("role");
+                entity.Property(s => s.Role).HasColumnName("role").HasConversion<string>();
             });
 
             modelBuilder.Entity<Shelter>(entity =>

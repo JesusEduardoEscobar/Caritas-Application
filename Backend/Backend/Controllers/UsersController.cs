@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using Backend.Infraestructure.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers
 {
@@ -17,11 +18,13 @@ namespace Backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly NeonTechDbContext _context;
+        private readonly IAuthenticator _auth;
         private readonly IUsers _users;
 
-        public UsersController(NeonTechDbContext context, IUsers users)
+        public UsersController(NeonTechDbContext context, IAuthenticator auth, IUsers users)
         {
             _context = context;
+            _auth = auth;
             _users = users;
         }
         [HttpGet]
@@ -32,21 +35,47 @@ namespace Backend.Controllers
         }
 
 
-        [HttpPost("login")]
-        public async Task<IActionResult> LoginUser([FromBody] LoginRequest request)
+        [HttpPost("loginUser")]
+        [AllowAnonymous]
+        public async Task<IActionResult> LoginUser(string email, string password)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+                if (email == null || password == null)
                 {
-                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "401", null));
+                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos pueden estar vacios", "401", null));
+                }
+                var response = await _auth.Login(email, password);
+
+                if (response == null || response.Data == null)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault(response?.Message ?? "Credenciales inválidas", "401", null));
                 }
 
-                var response = await _users.LoginUser(request.Email, request.Password);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
 
-                if (response == null || response.Data == null || !response.Data.Any())
+        [HttpPost("loginAdmin")]
+        [AllowAnonymous]
+        public async Task<IActionResult> LoginAdmins(string email, string password)
+        {
+            try
+            {
+                if (email == null || password == null)
                 {
-                    return BadRequest(GlobalResponse<string>.Fault("Credenciales inválidas", "401", null));
+                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos pueden estar vacios", "401", null));
+                }
+                var response = await _auth.Login(email, password);
+
+                if (response == null || response.Data == null)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault(response?.Message ?? "Credenciales inválidas", "401", null));
                 }
 
                 return Ok(response);
@@ -113,7 +142,7 @@ namespace Backend.Controllers
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "400", null));
                 }
-                var response = await _users.RegisterAdmin(request.Email, request.Password, request.EmailAdmin, request.PasswordAdmin);
+                var response = await _users.RegisterAdmin(request.Nombre, request.Email, request.Password, request.EmailAdmin, request.PasswordAdmin);
                 if (response == null || response.Data == null || !response.Data.Any())
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));

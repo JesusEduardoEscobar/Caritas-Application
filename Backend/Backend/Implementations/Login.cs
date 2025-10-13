@@ -1,47 +1,126 @@
 ﻿using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Interfaces;
-using Backend.Infrastructure.Database;
 using Backend.Infraestructure.Models;
+using Backend.Infrastructure.Database;
+using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Math;
 using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
 using System.Reflection.Metadata;
+using BCrypt.Net;
 
 namespace Backend.Implementations
 {
     public class Login : IUsers
     {
         private readonly NeonTechDbContext _context;
+        private readonly IConfiguration _config;
 
-        public Login(NeonTechDbContext context)
+        public Login(NeonTechDbContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
 
         // Login de los usuarios
-        public async Task<GlobalResponse<IEnumerable<dynamic>>> LoginUser(string email, string password)
+        public async Task<GlobalResponse<dynamic>> LoginUser(string email, string password)
         {
             try
             {
-                var user = await _context.Users
-                    .Where(u => u.Email == email && u.Password == password)
-                    .Select(u => new { u.Id, u.Email, u.Name, u.Verified, u.Role })
-                    .FirstOrDefaultAsync();
+                var userEntity = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == email);
 
-
-                if (user == null)
+                if (userEntity == null)
                 {
-                    return GlobalResponse<IEnumerable<dynamic>>.Fault("Usuario no encontrado", "404", null);
+                    return GlobalResponse<dynamic>.Fault("Credenciales inválidas", "401", null);
                 }
-                var result = new List<dynamic> { user };
-                return GlobalResponse<IEnumerable<dynamic>>.Success(result, 1, "Login exitoso", "200");
+
+                if (!BCrypt.Net.BCrypt.Verify(password, userEntity.Password))
+                {
+                    return GlobalResponse<dynamic>.Fault("Credenciales inválidas", "401", null);
+                }
+
+                var token = JwtHelper.GenerateToken(userEntity, _config);
+
+                var result = new
+                {
+                    token,
+                    user = new
+                    {
+                        userEntity.Id,
+                        userEntity.Name,
+                        userEntity.Email,
+                        userEntity.Password,
+                        userEntity.Age,
+                        userEntity.Phone,
+                        userEntity.EconomicLevel,
+                        userEntity.Verified,
+                        userEntity.ShelterId,
+                        Role = userEntity.Role.ToString()
+                    }
+                };
+
+                return GlobalResponse<dynamic>.Success(result, 1, "Login exitoso", "200");
             }
             catch (Exception ex)
             {
-                return GlobalResponse<IEnumerable<dynamic>>.Fault($"Error al procesar login: {ex.Message}", "-1", new List<dynamic>());
+                return GlobalResponse<dynamic>.Fault($"Error al procesar login: {ex.Message}", "-1", null);
+            }
+        }
+        public async Task<GlobalResponse<dynamic>> LoginAdmins(string email, string password)
+        {
+            try
+            {
+                var userEntity = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == email);
+
+                if (userEntity == null)
+                {
+                    return GlobalResponse<dynamic>.Fault("Credenciales inválidas", "401", null);
+                }
+
+                if (!BCrypt.Net.BCrypt.Verify(password, userEntity.Password))
+                {
+                    return GlobalResponse<dynamic>.Fault("Credenciales inválidas", "401", null);
+                }
+
+                if (userEntity.Role != UserRole.admin)
+                {
+                    return GlobalResponse<dynamic>.Fault("Acceso restringido solo para administradores", "403", null);
+                }
+
+                var token = JwtHelper.GenerateToken(userEntity, _config);
+
+                var result = new
+                {
+                    token,
+                    user = new
+                    {
+                        userEntity.Id,
+                        userEntity.Name,
+                        userEntity.Email,
+                        userEntity.Password,
+                        userEntity.Age,
+                        userEntity.Phone,
+                        userEntity.EconomicLevel,
+                        userEntity.Verified,
+                        userEntity.ShelterId,
+                        Role = userEntity.Role.ToString()
+                    }
+                };
+
+                return GlobalResponse<dynamic>.Success(result, 1, "Login exitoso", "200");
+            }
+            catch (Exception ex)
+            {
+                return GlobalResponse<dynamic>.Fault($"Error al procesar login: {ex.Message}", "-1", null);
             }
         }
 
-        // Registro de los usuarios
-        public async Task<GlobalResponse<IEnumerable<dynamic>>> RegisterLite(string nombre, string password, string numero)
+
+
+    // Registro de los usuarios
+    public async Task<GlobalResponse<IEnumerable<dynamic>>> RegisterLite(string nombre, string password, string numero)
         {
             try
             {
@@ -136,11 +215,11 @@ namespace Backend.Implementations
         }
 
 
-        public async Task<GlobalResponse<IEnumerable<dynamic>>> RegisterAdmin(string email, string password, string emailAdmin, string passwordAdmin)
+        public async Task<GlobalResponse<IEnumerable<dynamic>>> RegisterAdmin(string name, string email, string password, string emailAdmin, string passwordAdmin)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+                if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(name))
                 {
                     return GlobalResponse<IEnumerable<dynamic>>.Fault("Todos los campos son obligatorios", "400", new List<dynamic>());
                 }
@@ -160,6 +239,7 @@ namespace Backend.Implementations
                 {
                     var nuevoUsuario = new User
                     {
+                        Name = name,
                         Email = email,
                         Password = password,
                         Role = UserRole.admin,
@@ -173,7 +253,6 @@ namespace Backend.Implementations
                     new {
                             nuevoUsuario.Id,
                             nuevoUsuario.Name,
-                            nuevoUsuario.Phone
                         }
                     };
 
@@ -257,7 +336,7 @@ namespace Backend.Implementations
             try
             {
                 var usuario = await _context.Users
-                    .Where(u => u.Id == id)
+                    .Where(u => u.Id == id && u.Role == UserRole.user)
                     .Select(u => new
                     {
                         u.Id,
@@ -296,7 +375,7 @@ namespace Backend.Implementations
                         u.Id,
                         u.Name,
                         u.Email,
-                        u.Phone,
+                        //u.Phone,
                         u.ShelterId,
                         u.EconomicLevel,
                         u.Verified,

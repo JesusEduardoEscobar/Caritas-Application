@@ -20,6 +20,16 @@ builder.Logging.SetMinimumLevel(LogLevel.Warning); // Nivel mínimo
 builder.Services.AddDbContext<NeonTechDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Allow the frontend 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy => policy.WithOrigins("http://localhost:3000")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
+});
+
+
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<IAuthenticator, Authenticator>();
@@ -98,6 +108,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

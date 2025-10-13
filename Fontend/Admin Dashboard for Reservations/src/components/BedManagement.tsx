@@ -8,16 +8,18 @@ import { Bed, Filter, Search, Plus, Edit, Trash2 } from 'lucide-react';
 
 // Mock data
 const bedData = [
-  { id: 1, number: '101', service: 'Lavanderia', status: 'occupied', patient: 'Juan Pérez', checkIn: '2024-01-15', checkOut: '2024-01-18' },
-  { id: 2, number: '102', service: 'Lavanderia', status: 'available', patient: null, checkIn: null, checkOut: null },
-  { id: 3, number: '103', service: 'Lavanderia', status: 'maintenance', patient: null, checkIn: null, checkOut: null },
-  { id: 4, number: '201', service: 'Cocina', status: 'occupied', patient: 'María García', checkIn: '2024-01-14', checkOut: '2024-01-20' },
-  { id: 5, number: '202', service: 'Cocina', status: 'reserved', patient: 'Carlos López', checkIn: '2024-01-16', checkOut: '2024-01-19' },
-  { id: 6, number: '301', service: 'Ducha', status: 'available', patient: null, checkIn: null, checkOut: null },
-  { id: 7, number: '401', service: 'Pediatría', status: 'available', patient: null, checkIn: null, checkOut: null }
+  { id: 1, number: '101', service: 'Hospedaje', status: 'occupied', checkIn: '2024-01-15', checkOut: '2024-01-18' },
+  { id: 2, number: '102', service: 'Hospedaje', status: 'available', checkIn: null, checkOut: null },
+  { id: 3, number: '103', service: 'Hospedaje', status: 'maintenance', checkIn: null, checkOut: null },
+  { id: 4, number: '201', service: 'Hospedaje', status: 'occupied', checkIn: '2024-01-14', checkOut: '2024-01-20' },
+  { id: 5, number: '202', service: 'Hospedaje', status: 'reserved', checkIn: '2024-01-16', checkOut: '2024-01-19' },
+  { id: 6, number: '301', service: 'Hospedaje', status: 'available', checkIn: null, checkOut: null },
+  { id: 7, number: '401', service: 'Hospedaje', status: 'available', checkIn: null, checkOut: null },
+  { id: 8, number: '1', service: 'Regaderas', status: 'available', checkIn: null, checkOut: null },
+  { id: 9, number: '2', service: 'Regaderas', status: 'occupied', checkIn: '2024-01-15', checkOut: '2024-01-15' },
 ];
 
-const services = ['Todos', 'Lavanderia', 'Cocina', 'Ducha', 'PediDoctoratría'];
+const services = ['Todos', 'Hospedaje', 'Comida', 'Regaderas', 'Lavandería', 'Enfermería'];
 const statuses = ['Todos', 'available', 'occupied', 'reserved', 'maintenance'];
 
 const statusLabels = {
@@ -42,8 +44,7 @@ export function BedManagement() {
   const filteredBeds = bedData.filter(bed => {
     const matchesService = selectedService === 'Todos' || bed.service === selectedService;
     const matchesStatus = selectedStatus === 'Todos' || bed.status === selectedStatus;
-    const matchesSearch = bed.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (bed.patient?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    const matchesSearch = bed.number.toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesService && matchesStatus && matchesSearch;
   });
@@ -59,10 +60,10 @@ export function BedManagement() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <h2 className="text-2xl">Gestión de Camas</h2>
+        <h2 className="text-2xl">Gestión de Recursos y Camas</h2>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
-          Agregar Cama
+          Agregar Recurso
         </Button>
       </div>
 
@@ -110,7 +111,7 @@ export function BedManagement() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Número de cama o paciente..."
+                  placeholder="Número de cama o recurso..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -151,28 +152,22 @@ export function BedManagement() {
                 {getStatusBadge(bed.status)}
               </div>
 
-              {bed.patient && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Paciente:</span>
-                    <span className="text-sm">{bed.patient}</span>
+              {(bed.status === 'occupied' || bed.status === 'reserved') && bed.checkIn && (
+                <div className="space-y-1 pt-2 border-t">
+                  <div className="flex items-center justify-between text-xs">
+                    <span>Ingreso:</span>
+                    <span>{bed.checkIn}</span>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span>Ingreso:</span>
-                      <span>{bed.checkIn}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span>Salida prevista:</span>
-                      <span>{bed.checkOut}</span>
-                    </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span>Salida prevista:</span>
+                    <span>{bed.checkOut}</span>
                   </div>
-                </>
+                </div>
               )}
 
               {bed.status === 'available' && (
                 <Button className="w-full" size="sm">
-                  Asignar Paciente
+                  Marcar como Ocupado
                 </Button>
               )}
 
@@ -190,7 +185,7 @@ export function BedManagement() {
         <Card>
           <CardContent className="text-center py-8">
             <p className="text-muted-foreground">
-              No se encontraron camas con los filtros aplicados
+              No se encontraron recursos con los filtros aplicados
             </p>
           </CardContent>
         </Card>
