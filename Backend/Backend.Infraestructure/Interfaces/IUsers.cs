@@ -11,6 +11,7 @@ namespace Backend.Infraestructure.Interfaces
     {
         // Log users
         Task<GlobalResponse<dynamic>> LoginUser(string email, string password);
+        Task<GlobalResponse<dynamic>> LoginAdmins(string email, string password);
 
         // Register user
         Task<GlobalResponse<IEnumerable<dynamic>>> RegisterLite(string nombre, string password, string numero);

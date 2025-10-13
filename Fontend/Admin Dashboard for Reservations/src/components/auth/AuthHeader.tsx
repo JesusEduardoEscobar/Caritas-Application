@@ -9,18 +9,26 @@ export function AuthHeader() {
 
   if (!admin) return null;
 
-  const initials = admin.name
+  const initials =( admin.name ?? '')
     .split(' ')
     .map(name => name[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
 
+  const roleLabel = typeof admin.role === 'string'
+  ? admin.role.replace('_', ' ')
+  : admin.role === 1
+    ? 'admin'
+    : admin.role === 2
+    ? 'usuario'
+    : 'desconocido';
+
   return (
     <div className="flex items-center space-x-4">
       <div className="hidden md:block text-right">
-        <p className="text-sm">{admin.name}</p>
-        <p className="text-xs text-muted-foreground capitalize">{admin.role.replace('_', ' ')}</p>
+        <p className="text-sm">{admin.name ?? `Admin${admin.id}`}</p>
+        <p className="text-xs text-muted-foreground capitalize">{roleLabel}</p>
       </div>
       
       <DropdownMenu>
@@ -40,16 +48,6 @@ export function AuthHeader() {
               <p className="text-xs text-muted-foreground">{admin.email}</p>
             </div>
           </div>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            <span>Perfil</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Configuración</span>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout}>
             <LogOut className="mr-2 h-4 w-4" />
             <span>Cerrar sesión</span>

@@ -97,12 +97,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Example: const response = await fetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     try {
       // Mock login - replace with your backend API
+      const result = await loginUser(email, password);
       if (result.success && result.token && result.user) {
         setAdmin(result.user);
-        const result = await loginUser(email, password);
+        setToken(result.token);
+        localStorage.setItem('auth_token', result.token);
         setIsLoading(false);
+        return { success: true };
       }
-        return { success: true, error: result.error };
+      setIsLoading(false);
+      return { success: false, error: result.error };
     } catch (error) {
       setIsLoading(false);
       return { success: false, error: 'Error de conexión' };

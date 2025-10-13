@@ -35,7 +35,6 @@ namespace Backend.Implementations
                     return GlobalResponse<dynamic>.Fault("Credenciales inválidas", "401", null);
                 }
 
-                // Verifica la contraseña con BCrypt
                 if (!BCrypt.Net.BCrypt.Verify(password, userEntity.Password))
                 {
                     return GlobalResponse<dynamic>.Fault("Credenciales inválidas", "401", null);
@@ -49,9 +48,63 @@ namespace Backend.Implementations
                     user = new
                     {
                         userEntity.Id,
-                        userEntity.Email,
                         userEntity.Name,
+                        userEntity.Email,
+                        userEntity.Password,
+                        userEntity.Age,
+                        userEntity.Phone,
+                        userEntity.EconomicLevel,
                         userEntity.Verified,
+                        userEntity.ShelterId,
+                        Role = userEntity.Role.ToString()
+                    }
+                };
+
+                return GlobalResponse<dynamic>.Success(result, 1, "Login exitoso", "200");
+            }
+            catch (Exception ex)
+            {
+                return GlobalResponse<dynamic>.Fault($"Error al procesar login: {ex.Message}", "-1", null);
+            }
+        }
+        public async Task<GlobalResponse<dynamic>> LoginAdmins(string email, string password)
+        {
+            try
+            {
+                var userEntity = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == email);
+
+                if (userEntity == null)
+                {
+                    return GlobalResponse<dynamic>.Fault("Credenciales inválidas", "401", null);
+                }
+
+                if (!BCrypt.Net.BCrypt.Verify(password, userEntity.Password))
+                {
+                    return GlobalResponse<dynamic>.Fault("Credenciales inválidas", "401", null);
+                }
+
+                if (userEntity.Role != UserRole.admin)
+                {
+                    return GlobalResponse<dynamic>.Fault("Acceso restringido solo para administradores", "403", null);
+                }
+
+                var token = JwtHelper.GenerateToken(userEntity, _config);
+
+                var result = new
+                {
+                    token,
+                    user = new
+                    {
+                        userEntity.Id,
+                        userEntity.Name,
+                        userEntity.Email,
+                        userEntity.Password,
+                        userEntity.Age,
+                        userEntity.Phone,
+                        userEntity.EconomicLevel,
+                        userEntity.Verified,
+                        userEntity.ShelterId,
                         Role = userEntity.Role.ToString()
                     }
                 };
@@ -283,7 +336,7 @@ namespace Backend.Implementations
             try
             {
                 var usuario = await _context.Users
-                    .Where(u => u.Id == id)
+                    .Where(u => u.Id == id && u.Role == UserRole.user)
                     .Select(u => new
                     {
                         u.Id,
