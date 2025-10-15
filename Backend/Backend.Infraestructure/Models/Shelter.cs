@@ -10,8 +10,7 @@
         public string Phone { get; set; } = string.Empty;
         public int Capacity { get; set; }
         public string? Description { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public int Occupancy { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 
 

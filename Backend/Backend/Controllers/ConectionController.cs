@@ -1,7 +1,6 @@
-﻿using Backend.Infrastructure.Database; // Asegúrate de que este namespace apunta a NeonTechDbContext
+﻿using Backend.Infraestructure.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static Npgsql.EntityFrameworkCore.PostgreSQL.Query.Expressions.Internal.PgTableValuedFunctionExpression;
 
 namespace Backend.Controllers
 {

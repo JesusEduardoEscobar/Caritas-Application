@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Backend.Infraestructure.Interfaces
+namespace Backend.Interfaces
 {
     public interface IShelterServices
     {
@@ -17,10 +17,10 @@ namespace Backend.Infraestructure.Interfaces
         Task<GlobalResponse<ShelterService>> GetShelterService(int shelterId, int serviceId);
 
         // Post
-        Task<GlobalResponse<ShelterService>> CreateShelterService(ShelterServiceCreateDto shelterServiceDto);
+        Task<GlobalResponse<ShelterService>> CreateShelterService(ShelterServiceCreateDto dto);
 
         // Put
-        Task<GlobalResponse<ShelterService>> UpdateShelterService(ShelterServiceUpdateDto shelterServiceDto);
+        Task<GlobalResponse<ShelterService>> UpdateShelterService(ShelterServicePutDto dto);
 
         // Delete
         Task<GlobalResponse<ShelterService>> DeleteShelterService(int shelterId, int serviceId);

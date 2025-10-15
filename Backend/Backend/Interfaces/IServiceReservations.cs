@@ -1,24 +1,14 @@
-﻿using Backend.Dtos;
+using Backend.Infrastructure.Dtos;
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Backend.Infraestructure.Interfaces
+namespace Backend.Interfaces
 {
     public interface IServiceReservations
     {
-        // Get
-        Task<GlobalResponse<IEnumerable<ServiceReservation>>> GetServiceReservations();
-        Task<GlobalResponse<ServiceReservation>> GetServiceReservation(int serviceReservationId);
+        // Crear reserva con QR usando DTO
+        Task<GlobalResponse<dynamic>> CreateReservation(ServiceReservationCreateDto dto);
 
-        // Post
-        Task<GlobalResponse<ServiceReservation>> CreateShelterService(ServiceReservationCreateDto serviceReservationDto);
-
-        // Delete
-        Task<GlobalResponse<ServiceReservation>> DeleteShelterService(int serviceReservationId);
+        // Validar QR en base de datos
+        Task<GlobalResponse<dynamic>> ValidateQr(string qrData);
     }
 }

@@ -1,8 +1,8 @@
 using Backend.Dtos;
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using Backend.Infraestructure.Models;
-using Backend.Infrastructure.Database;
+using Backend.Infraestructure.Database;
 using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
@@ -27,11 +27,6 @@ namespace Backend.Implementations
             try
             {
                 var services = await _context.Services.ToListAsync();
-                if (services == null || !services.Any())
-                {
-                    _logger.LogWarning("No se encontraron services en la base de datos.");
-                    return GlobalResponse<IEnumerable<Service>>.Fault("Servicios no encontrados", "404", null);
-                }
 
                 _logger.LogInformation("Se obtuvieron {Count} servicios correctamente.", services.Count);
                 return GlobalResponse<IEnumerable<Service>>.Success(services, services.Count, "Obtención de Services exitoso", "200");
@@ -69,11 +64,11 @@ namespace Backend.Implementations
 
         #region POST
 
-        public async Task<GlobalResponse<Service>> CreateService(ServiceCreateDto serviceDto)
+        public async Task<GlobalResponse<Service>> CreateService(ServiceCreateDto dto)
         {
             try
             {
-                if (serviceDto == null)
+                if (dto == null)
                 {
                     _logger.LogWarning("Intento de crear service con datos nulos.");
                     return GlobalResponse<Service>.Fault("Datos inválidos", "400", null);
@@ -81,9 +76,9 @@ namespace Backend.Implementations
 
                 var service = new Service
                 {
-                    Name = serviceDto.Name,
-                    Description = serviceDto.Description,
-                    IconKey = serviceDto.IconKey,
+                    Name = dto.Name,
+                    Description = dto.Description,
+                    IconKey = dto.IconKey,
                 };
 
                 _context.Services.Add(service);
@@ -103,30 +98,29 @@ namespace Backend.Implementations
 
         #region PUT
 
-        public async Task<GlobalResponse<Service>> UpdateService(ServiceUpdateDto serviceDto)
+        public async Task<GlobalResponse<Service>> UpdateService(ServicePutDto dto)
         {
             try
             {
-                var existing = await _context.Services.FindAsync(serviceDto.Id);
+                var existing = await _context.Services.FindAsync(dto.Id);
                 if (existing == null)
                 {
-                    _logger.LogWarning("Service {Id} no encontrado para actualizar.", serviceDto.Id);
+                    _logger.LogWarning("Service {Id} no encontrado para actualizar.", dto.Id);
                     return GlobalResponse<Service>.Fault("Service no encontrado", "404", null);
                 }
 
-                if (!string.IsNullOrWhiteSpace(serviceDto.Name)) existing.Name = serviceDto.Name;
-                if (serviceDto.Description != null) existing.Description = serviceDto.Description;
-                if (serviceDto.IconKey != null) existing.IconKey = serviceDto.IconKey;
+                existing.Name = dto.Name;
+                existing.Description = dto.Description;
+                existing.IconKey = dto.IconKey;
 
-                _context.Entry(existing).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Service {Id} actualizado correctamente.", serviceDto.Id);
+                _logger.LogInformation("Service {Id} actualizado correctamente.", dto.Id);
                 return GlobalResponse<Service>.Success(existing, 1, "Service actualizado exitosamente", "200");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar service {Id}.", serviceDto.Id);
+                _logger.LogError(ex, "Error al actualizar service {Id}.", dto.Id);
                 return GlobalResponse<Service>.Fault("Error al actualizar service", "-1", null);
             }
         }

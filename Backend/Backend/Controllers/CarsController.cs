@@ -1,10 +1,9 @@
 using Backend.Dtos;
 using Backend.Implementations;
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using Backend.Infraestructure.Models;
 using Backend.Infraestructure.Objects;
-using Backend.Infrastructure.Database;
 using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2016.Excel;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +13,7 @@ using System;
 
 namespace Backend.Controllers
 {
-
+    //[Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class CarsController : ControllerBase
@@ -26,6 +25,7 @@ namespace Backend.Controllers
             _cars = cars;
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Car>>> GetCars([FromQuery] int? shelterId = null)
         {
@@ -33,6 +33,7 @@ namespace Backend.Controllers
             return MapResponse(response);
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Car>> GetCar(int id)
         {
@@ -41,25 +42,22 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Car>> CreateCar([FromBody] CarCreateDto carDto)
+        public async Task<ActionResult<Car>> CreateCar([FromBody] CarCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            var response = await _cars.CreateCar(carDto);
+            var response = await _cars.CreateCar(dto);
             return MapResponse(response, created: true);
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult<Car>> UpdateCar(int id, [FromBody] CarUpdateDto carDto)
+        [HttpPut]
+        public async Task<ActionResult<Car>> UpdateCar([FromBody] CarPutDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            if (id != carDto.Id)
-                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
-
-            var response = await _cars.UpdateCar(carDto);
+            var response = await _cars.UpdateCar(dto);
             return MapResponse(response);
         }
 

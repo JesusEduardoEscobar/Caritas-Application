@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Backend.Infraestructure.Interfaces
+namespace Backend.Interfaces
 {
     public interface IServices
     {
@@ -16,10 +16,10 @@ namespace Backend.Infraestructure.Interfaces
         Task<GlobalResponse<Service>> GetService(int id);
 
         // Post
-        Task<GlobalResponse<Service>> CreateService(ServiceCreateDto serviceDto);
+        Task<GlobalResponse<Service>> CreateService(ServiceCreateDto dto);
 
         // Put
-        Task<GlobalResponse<Service>> UpdateService(ServiceUpdateDto serviceDto);
+        Task<GlobalResponse<Service>> UpdateService(ServicePutDto dto);
 
         // Delete
         Task<GlobalResponse<Service>> DeleteService(int id);

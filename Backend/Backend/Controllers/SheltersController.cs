@@ -1,9 +1,8 @@
 using Backend.Dtos;
 using Backend.Implementations;
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using Backend.Infraestructure.Models;
-using Backend.Infrastructure.Database;
 using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using DocumentFormat.OpenXml.Spreadsheet;
@@ -16,7 +15,7 @@ using System.Net;
 
 namespace Backend.Controllers
 {
-    //[Authorize]
+    //[Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class SheltersController : ControllerBase
@@ -28,6 +27,7 @@ namespace Backend.Controllers
             _shelters = shelters;
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Shelter>>> GetShelters()
         {
@@ -35,6 +35,7 @@ namespace Backend.Controllers
             return MapResponse(response);
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Shelter>> GetShelter(int id)
         {
@@ -43,25 +44,22 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Shelter>> CreateShelter([FromBody] ShelterCreateDto shelterDto)
+        public async Task<ActionResult<Shelter>> CreateShelter([FromBody] ShelterCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            var response = await _shelters.CreateShelter(shelterDto);
+            var response = await _shelters.CreateShelter(dto);
             return MapResponse(response, created: true);
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult<Shelter>> UpdateShelter(int id, [FromBody] ShelterUpdateDto shelterDto)
+        [HttpPut]
+        public async Task<ActionResult<Shelter>> UpdateShelter([FromBody] ShelterPutDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            if (id != shelterDto.Id)
-                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
-
-            var response = await _shelters.UpdateShelter(shelterDto);
+            var response = await _shelters.UpdateShelter(dto);
             return MapResponse(response);
         }
 

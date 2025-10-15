@@ -3,7 +3,7 @@ using Backend.Infrastructure.Dtos;
 using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Dtos; // si tu GlobalResponse está aquí
 
-namespace Backend.Infraestructure.Interfaces
+namespace Backend.Interfaces
 {
     public interface IBedReservations
     {

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Backend.Infraestructure.Interfaces
+namespace Backend.Interfaces
 {
     public interface ICars
     {
@@ -16,10 +16,10 @@ namespace Backend.Infraestructure.Interfaces
         Task<GlobalResponse<Car>> GetCar(int id);
 
         // Post
-        Task<GlobalResponse<Car>> CreateCar(CarCreateDto carDto);
+        Task<GlobalResponse<Car>> CreateCar(CarCreateDto dto);
 
         // Put
-        Task<GlobalResponse<Car>> UpdateCar(CarUpdateDto carDto);
+        Task<GlobalResponse<Car>> UpdateCar(CarPutDto dto);
 
         // Delete
         Task<GlobalResponse<Car>> DeleteCar(int id);

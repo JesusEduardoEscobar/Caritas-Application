@@ -1,7 +1,6 @@
 using Backend.Implementations;
-using Backend.Infraestructure.Interfaces;
-using Backend.Infrastructure.Database;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
+using Backend.Infraestructure.Database;
 using Backend.Infraestructure.Implementations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -35,14 +34,18 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<IAuthenticator, Authenticator>();
 builder.Services.AddScoped<IUsers, Login>();
+
 builder.Services.AddScoped<IShelters, SheltersManager>();
 builder.Services.AddScoped<IServices, ServicesManager>();
 builder.Services.AddScoped<IShelterServices, ShelterServicesManager>();
+builder.Services.AddScoped<IServiceReservations, ServiceReservations>();
+
 builder.Services.AddScoped<IBeds, BedsManager>();
 builder.Services.AddScoped<IReservations, ReservationsManager>();
+builder.Services.AddScoped<IBedReservations, BedReservations>();
+
 builder.Services.AddScoped<ICars, CarsManager>();
 builder.Services.AddScoped<ITransportRequests, TransportRequestsManager>();
-builder.Services.AddScoped<IBedReservations, BedReservations>();
 
 
 builder.Services.AddAuthentication(options =>
@@ -98,8 +101,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ð¹ Registramos el servicio correctamente (ya estaba, se mantiene)
-builder.Services.AddScoped<IServiceReservations, ServiceReservations>();
 
 var app = builder.Build();
 

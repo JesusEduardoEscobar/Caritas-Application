@@ -14,4 +14,9 @@ namespace Backend.Dtos
         public int ServiceId { get; set; }
     }
 
+    public class ServiceReservationValidateDto
+    {
+        public string QrData { get; set; } = string.Empty;
+    }
+
 }

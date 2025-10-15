@@ -1,6 +1,6 @@
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
-using Backend.Infrastructure.Database;
+using Backend.Interfaces;
+using Backend.Infraestructure.Database;
 using Backend.Implementations;
 using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2016.Excel;

@@ -1,7 +1,6 @@
-using Backend.Infrastructure.Database;
-using Backend.Infrastructure.Dtos;
-using Backend.Infraestructure.Interfaces;
+using Backend.Infraestructure.Database;
 using Backend.Infraestructure.Models;
+using Backend.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Dtos;

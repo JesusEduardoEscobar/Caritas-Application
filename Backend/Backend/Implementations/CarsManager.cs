@@ -1,8 +1,8 @@
 using Backend.Dtos;
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using Backend.Infraestructure.Models;
-using Backend.Infrastructure.Database;
+using Backend.Infraestructure.Database;
 using DocumentFormat.OpenXml.Drawing;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
@@ -33,12 +33,6 @@ namespace Backend.Implementations
                     query = query.Where(b => b.ShelterId == shelterId.Value);
 
                 var cars = await query.ToListAsync();
-
-                if (cars == null || cars.Count == 0)
-                {
-                    _logger.LogWarning("No se encontraron carros en la base de datos.");
-                    return GlobalResponse<IEnumerable<Car>>.Fault("Carros no encontradas", "404", null);
-                }
 
                 _logger.LogInformation("Se obtuvieron {Count} carros correctamente.", cars.Count);
                 return GlobalResponse<IEnumerable<Car>>.Success(cars, cars.Count, "Obtención de Carros exitoso", "200");
@@ -75,30 +69,30 @@ namespace Backend.Implementations
 
         #region POST
 
-        public async Task<GlobalResponse<Car>> CreateCar(CarCreateDto carDto)
+        public async Task<GlobalResponse<Car>> CreateCar(CarCreateDto dto)
         {
             try
             {
-                if (carDto == null)
+                if (dto == null)
                 {
                     _logger.LogWarning("Intento de crear carro con datos nulos.");
                     return GlobalResponse<Car>.Fault("Datos inválidos", "400", null);
                 }
 
                 bool shelterExists = await _context.Shelters
-                    .AnyAsync(s => s.Id == carDto.ShelterId);
+                    .AnyAsync(s => s.Id == dto.ShelterId);
                 if (!shelterExists)
                 {
-                    _logger.LogWarning("El ShelterId {ShelterId} no existe.", carDto.ShelterId);
-                    return GlobalResponse<Car>.Fault($"El refugio con ID {carDto.ShelterId} no existe.", "404", null);
+                    _logger.LogWarning("El ShelterId {ShelterId} no existe.", dto.ShelterId);
+                    return GlobalResponse<Car>.Fault($"El refugio con ID {dto.ShelterId} no existe.", "404", null);
                 }
 
                 var car = new Car
                 {
-                    ShelterId = carDto.ShelterId,
-                    Plate = carDto.Plate,
-                    Model = carDto.Model,
-                    Capacity = carDto.Capacity
+                    ShelterId = dto.ShelterId,
+                    Plate = dto.Plate,
+                    Model = dto.Model,
+                    Capacity = dto.Capacity
                 };
 
                 _context.Cars.Add(car);
@@ -118,42 +112,38 @@ namespace Backend.Implementations
 
         #region PUT
 
-        public async Task<GlobalResponse<Car>> UpdateCar(CarUpdateDto carDto)
+        public async Task<GlobalResponse<Car>> UpdateCar(CarPutDto dto)
         {
             try
             {
-                if (carDto.ShelterId != null)
+                bool shelterExists = await _context.Shelters
+                    .AnyAsync(s => s.Id == dto.ShelterId);
+                if (!shelterExists)
                 {
-                    bool shelterExists = await _context.Shelters
-                        .AnyAsync(s => s.Id == carDto.ShelterId);
-                    if (!shelterExists)
-                    {
-                        _logger.LogWarning("El ShelterId {ShelterId} no existe.", carDto.ShelterId);
-                        return GlobalResponse<Car>.Fault($"El refugio con ID {carDto.ShelterId} no existe.", "404", null);
-                    }
+                    _logger.LogWarning("El ShelterId {ShelterId} no existe.", dto.ShelterId);
+                    return GlobalResponse<Car>.Fault($"El refugio con ID {dto.ShelterId} no existe.", "404", null);
                 }
 
-                var existing = await _context.Cars.FindAsync(carDto.Id);
+                var existing = await _context.Cars.FindAsync(dto.Id);
                 if (existing == null)
                 {
-                    _logger.LogWarning("Carro {Id} no encontrada para actualizar.", carDto.Id);
+                    _logger.LogWarning("Carro {Id} no encontrada para actualizar.", dto.Id);
                     return GlobalResponse<Car>.Fault("Carro no encontrada", "404", null);
                 }
 
-                if (carDto.ShelterId.HasValue) existing.ShelterId = carDto.ShelterId.Value;
-                if (!string.IsNullOrEmpty(carDto.Plate)) existing.Plate = carDto.Plate;
-                if (!string.IsNullOrEmpty(carDto.Model)) existing.Model = carDto.Model;
-                if (carDto.Capacity.HasValue) existing.Capacity = carDto.Capacity.Value;
+                existing.ShelterId = dto.ShelterId;
+                existing.Plate = dto.Plate;
+                existing.Model = dto.Model;
+                existing.Capacity = dto.Capacity;
 
-                _context.Entry(existing).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Carro {Id} actualizada correctamente.", carDto.Id);
+                _logger.LogInformation("Carro {Id} actualizada correctamente.", dto.Id);
                 return GlobalResponse<Car>.Success(existing, 1, "Carro actualizada exitosamente", "200");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar carro {Id}.", carDto.Id);
+                _logger.LogError(ex, "Error al actualizar carro {Id}.", dto.Id);
                 return GlobalResponse<Car>.Fault("Error al actualizar carro", "-1", null);
             }
         }

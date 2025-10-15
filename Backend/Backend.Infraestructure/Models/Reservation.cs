@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-
 namespace Backend.Infraestructure.Models
 {
     public class Reservation
@@ -11,18 +10,10 @@ namespace Backend.Infraestructure.Models
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public ReservationStatus Status { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [Column("qr_data")]
         public string QrData { get; set; } = string.Empty;
-    }
-
-    public enum ReservationStatus
-    {
-        reserved,
-        checked_in,
-        completed,
-        canceled
     }
 
 

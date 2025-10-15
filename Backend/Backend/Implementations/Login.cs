@@ -1,7 +1,7 @@
 ﻿using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using Backend.Infraestructure.Models;
-using Backend.Infrastructure.Database;
+using Backend.Infraestructure.Database;
 using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Math;
 using Microsoft.EntityFrameworkCore;

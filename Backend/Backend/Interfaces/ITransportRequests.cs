@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Backend.Infraestructure.Interfaces
+namespace Backend.Interfaces
 {
     public interface ITransportRequests
     {
@@ -16,12 +16,12 @@ namespace Backend.Infraestructure.Interfaces
         Task<GlobalResponse<TransportRequest>> GetTransportRequest(int transportRequestId);
 
         // Post
-        Task<GlobalResponse<TransportRequest>> CreateShelterService(TransportRequestCreateDto transportRequestId);
+        Task<GlobalResponse<TransportRequest>> CreateTransportRequest(TransportRequestCreateDto transportRequestDto);
 
         // Patch
-        Task<GlobalResponse<TransportRequest>> PatchShelterService(TransportRequestPatchDto transportRequestDto);
+        Task<GlobalResponse<TransportRequest>> PatchTransportRequest(TransportRequestPatchDto transportRequestDto);
 
         // Delete
-        Task<GlobalResponse<TransportRequest>> DeleteShelterService(int transportRequestId);
+        Task<GlobalResponse<TransportRequest>> DeleteTransportRequest(int transportRequestId);
     }
 }
