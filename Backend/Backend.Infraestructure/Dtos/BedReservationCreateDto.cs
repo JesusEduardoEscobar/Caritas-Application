@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
 
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Backend.Infraestructure.Models
+namespace Backend.Infraestructure.Dtos
 {
-    public class Reservation
+    public class BedReservationCreateDto
     {
         public int Id { get; set; }
         public int UserId { get; set; }
