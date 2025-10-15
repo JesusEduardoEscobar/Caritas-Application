@@ -42,6 +42,8 @@ builder.Services.AddScoped<IBeds, BedsManager>();
 builder.Services.AddScoped<IReservations, ReservationsManager>();
 builder.Services.AddScoped<ICars, CarsManager>();
 builder.Services.AddScoped<ITransportRequests, TransportRequestsManager>();
+builder.Services.AddScoped<IBedReservations, BedReservations>();
+
 
 builder.Services.AddAuthentication(options =>
 {
