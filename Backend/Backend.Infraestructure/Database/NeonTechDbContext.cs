@@ -1,10 +1,45 @@
 ﻿using Backend.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 
 namespace Backend.Infrastructure.Database
 {
+    internal class Translator : INpgsqlNameTranslator
+    {
+        public string TranslateTypeName(string clrName)
+        {
+            return ToSnakeCase(clrName);
+        }
+
+        public string TranslateMemberName(string clrName)
+        {
+            return ToSnakeCase(clrName);
+        }
+
+        private string ToSnakeCase(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return name;
+
+            // Convierte "PasivoActivo" -> "pasivo_activo"
+            var snake = Regex.Replace(name, @"([a-z0-9])([A-Z])", "$1_$2").ToLower();
+            return snake;
+        }
+    }
+
+    public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
+    {
+        public void Configure(EntityTypeBuilder<Reservation> builder)
+        {
+            builder.Property(b => b.Status).HasConversion(c => c.ToString(), c => Enum.Parse<ReservationStatus>(c));
+        }
+    }
+
     public class NeonTechDbContext : DbContext
     {
         public NeonTechDbContext(DbContextOptions<NeonTechDbContext> options)
@@ -26,7 +61,9 @@ namespace Backend.Infrastructure.Database
         {
             modelBuilder.HasPostgresEnum<UserRole>();
             modelBuilder.HasPostgresEnum<EconomicLevel>();
-            modelBuilder.HasPostgresEnum<ReservationStatus>();
+            //modelBuilder.HasPostgresEnum<ReservationStatus>();
+
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(NeonTechDbContext).Assembly);
 
             modelBuilder.Entity<User>(entity =>
             {
@@ -144,7 +181,8 @@ namespace Backend.Infrastructure.Database
                 entity.Property(tr => tr.PickupLocation).HasColumnName("pickup_location");
                 entity.Property(tr => tr.DropoffLocation).HasColumnName("dropoff_location");
                 entity.Property(tr => tr.RequestDate).HasColumnName("request_date");
-                entity.Property(tr => tr.Status).HasColumnName("status");
+                //entity.Property(tr => tr.Status).HasColumnName("status").HasConversion<string>();
+                entity.Property(tr => tr.Status).HasColumnName("status").HasConversion<EnumToStringConverter<ReservationStatus>>();
             });
 
             base.OnModelCreating(modelBuilder);
