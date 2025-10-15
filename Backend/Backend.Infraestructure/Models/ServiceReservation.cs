@@ -1,7 +1,4 @@
-// Backend.Infraestructure/Database/ServiceReservation.cs
-using System;
-
-namespace Backend.Infrastructure.Database
+namespace Backend.Infraestructure.Models
 {
     public class ServiceReservation
     {
