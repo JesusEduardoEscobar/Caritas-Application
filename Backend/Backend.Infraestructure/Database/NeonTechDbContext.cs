@@ -30,7 +30,7 @@ namespace Backend.Infrastructure.Database
         {
             modelBuilder.HasPostgresEnum<UserRole>();
             modelBuilder.HasPostgresEnum<EconomicLevel>();
-            modelBuilder.HasPostgresEnum<ReservationStatus>();
+            
 
             modelBuilder.Entity<User>(entity =>
             {
@@ -122,8 +122,9 @@ namespace Backend.Infrastructure.Database
                 entity.Property(r => r.BedId).HasColumnName("bed_id");
                 entity.Property(r => r.StartDate).HasColumnName("start_date");
                 entity.Property(r => r.EndDate).HasColumnName("end_date");
-                entity.Property(r => r.Status).HasColumnName("status");
+                entity.Property(r => r.Status).HasColumnName("status").HasConversion<string>();
                 entity.Property(r => r.CreatedAt).HasColumnName("created_at");
+                entity.Property(r => r.QrData).HasColumnName("qr_data");
             });
 
             // Cambiamos tablas para Car y TransportRequest
