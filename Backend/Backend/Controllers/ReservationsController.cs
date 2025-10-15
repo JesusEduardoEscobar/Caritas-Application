@@ -1,10 +1,9 @@
 using Backend.Dtos;
 using Backend.Implementations;
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using Backend.Infraestructure.Models;
 using Backend.Infraestructure.Objects;
-using Backend.Infrastructure.Database;
 using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2016.Excel;
 using Microsoft.AspNetCore.Authorization;

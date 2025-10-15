@@ -1,5 +1,5 @@
 using Backend.Infrastructure.Dtos;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using QRCoder;
 using Microsoft.AspNetCore.Mvc;
 using System.Drawing.Imaging;

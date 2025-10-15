@@ -1,9 +1,13 @@
 ﻿using Backend.Infraestructure.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 
-namespace Backend.Infrastructure.Database
+namespace Backend.Infraestructure.Database
 {
     public class NeonTechDbContext : DbContext
     {
@@ -57,7 +61,6 @@ namespace Backend.Infrastructure.Database
                 entity.Property(s => s.Capacity).HasColumnName("capacity");
                 entity.Property(s => s.Description).HasColumnName("description");
                 entity.Property(s => s.CreatedAt).HasColumnName("created_at");
-                entity.Property(s => s.Occupancy).HasColumnName("occupancy");
             });
 
             modelBuilder.Entity<Service>(entity =>
@@ -145,7 +148,8 @@ namespace Backend.Infrastructure.Database
                 entity.Property(tr => tr.PickupLocation).HasColumnName("pickup_location");
                 entity.Property(tr => tr.DropoffLocation).HasColumnName("dropoff_location");
                 entity.Property(tr => tr.RequestDate).HasColumnName("request_date");
-                entity.Property(tr => tr.Status).HasColumnName("status");
+                //entity.Property(tr => tr.Status).HasColumnName("status").HasConversion<string>();
+                entity.Property(tr => tr.Status).HasColumnName("status").HasConversion<EnumToStringConverter<ReservationStatus>>();
             });
 
             base.OnModelCreating(modelBuilder);

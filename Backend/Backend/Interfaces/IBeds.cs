@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Backend.Infraestructure.Interfaces
+namespace Backend.Interfaces
 {
     public interface IBeds
     {
@@ -16,13 +16,13 @@ namespace Backend.Infraestructure.Interfaces
         Task<GlobalResponse<Bed>> GetBed(int id);
 
         // Post
-        Task<GlobalResponse<Bed>> CreateBed(BedCreateDto bedDto);
+        Task<GlobalResponse<Bed>> CreateBed(BedCreateDto dto);
 
         // Put
-        Task<GlobalResponse<Bed>> UpdateBed(BedUpdateDto bedDto);
+        Task<GlobalResponse<Bed>> UpdateBed(BedPutDto dto);
 
         // Patch
-        Task<GlobalResponse<Bed>> UpdateBedAvailability(BedUpdateAvailabilityDto bedDto);
+        Task<GlobalResponse<Bed>> UpdateBedAvailability(BedPatchAvailabilityDto dto);
 
         // Delete
         Task<GlobalResponse<Bed>> DeleteBed(int id);

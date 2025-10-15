@@ -1,10 +1,11 @@
-// Backend.Infraestructure/Implementations/ServiceReservations.cs
-using Backend.Infrastructure.Database;
+using Backend.Infraestructure.Database;
+using Backend.Infraestructure.Implementations;
 using Backend.Infrastructure.Dtos;
-using Backend.Infraestructure.Interfaces;
+using Backend.Infraestructure.Models;
+using Backend.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Infraestructure.Implementations
+namespace Backend.Implementations
 {
     public class ServiceReservations : IServiceReservations
     {

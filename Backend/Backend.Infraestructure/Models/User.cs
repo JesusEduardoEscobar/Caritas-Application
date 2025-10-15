@@ -14,18 +14,5 @@
         public UserRole Role { get; set; }
     }
 
-    public enum EconomicLevel
-    {
-        low,
-        medium,
-        high
-    }
-
-    public enum UserRole
-    {
-        user,
-        admin
-    }
-
 
 }

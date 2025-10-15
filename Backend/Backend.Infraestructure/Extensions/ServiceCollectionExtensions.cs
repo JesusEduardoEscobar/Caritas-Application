@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Backend.Infrastructure.Database;
+using Backend.Infraestructure.Database;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace Backend.Infrastructure.Extensions
