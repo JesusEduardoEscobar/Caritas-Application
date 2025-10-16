@@ -38,14 +38,15 @@ namespace Backend.Infraestructure.Database
                 entity.HasKey(s => s.Id);
                 entity.Property(s => s.Id).HasColumnName("id");
                 entity.Property(s => s.Name).HasColumnName("name");
-                entity.Property(s => s.Password).HasColumnName("password");
+                entity.Property(s => s.DateOfBirth).HasColumnName("date_of_birth");
                 entity.Property(s => s.Email).HasColumnName("email");
+                entity.Property(s => s.Password).HasColumnName("password");
                 entity.Property(s => s.Phone).HasColumnName("phone");
-                entity.Property(s => s.Age).HasColumnName("age");
-                entity.Property(s => s.EconomicLevel).HasColumnName("economic_level").HasConversion<string>();
-                entity.Property(s => s.Verified).HasColumnName("verified");
-                entity.Property(s => s.ShelterId).HasColumnName("shelter_id");
                 entity.Property(s => s.Role).HasColumnName("role").HasConversion<string>();
+                entity.Property(s => s.ShelterId).HasColumnName("shelter_id");
+                entity.Property(s => s.EconomicLevel).HasColumnName("economic_level").HasConversion<string>();
+                entity.Property(s => s.CreatedAt).HasColumnName("created_at");
+                entity.Property(s => s.Verified).HasColumnName("verified");
             });
 
             modelBuilder.Entity<Shelter>(entity =>
