@@ -1,8 +1,7 @@
-// Backend.Infraestructure/Interfaces/IServiceReservations.cs
 using Backend.Infrastructure.Dtos;
-using Backend.Infraestructure.Implementations; // si tu GlobalResponse está aquí
+using Backend.Infraestructure.Implementations;
 
-namespace Backend.Infraestructure.Interfaces
+namespace Backend.Interfaces
 {
     public interface IServiceReservations
     {

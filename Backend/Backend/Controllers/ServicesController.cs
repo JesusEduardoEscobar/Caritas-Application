@@ -1,15 +1,16 @@
 using Backend.Dtos;
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using Backend.Infraestructure.Models;
-using Backend.Infrastructure.Database;
 using DocumentFormat.OpenXml.InkML;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers
 {
+    //[Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class ServicesController : ControllerBase
@@ -21,6 +22,7 @@ namespace Backend.Controllers
             _services = services;
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Service>>> GetServices()
         {
@@ -28,6 +30,7 @@ namespace Backend.Controllers
             return MapResponse(response);
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Service>> GetService(int id)
         {
@@ -35,28 +38,23 @@ namespace Backend.Controllers
             return MapResponse(response);
         }
 
-        [HttpPost()]
-        public async Task<ActionResult<Service>> CreateService([FromBody] ServiceCreateDto serviceDto)
+        [HttpPost]
+        public async Task<ActionResult<Service>> CreateService([FromBody] ServiceCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            var response = await _services.CreateService(serviceDto);
+            var response = await _services.CreateService(dto);
             return MapResponse(response, created: true);
         }
 
-
-
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult<Service>> UpdateShelter(int id, [FromBody] ServiceUpdateDto serviceDto)
+        [HttpPut]
+        public async Task<ActionResult<Service>> UpdateShelter([FromBody] ServicePutDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            if (id != serviceDto.Id)
-                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
-
-            var response = await _services.UpdateService(serviceDto);
+            var response = await _services.UpdateService(dto);
             return MapResponse(response);
         }
 

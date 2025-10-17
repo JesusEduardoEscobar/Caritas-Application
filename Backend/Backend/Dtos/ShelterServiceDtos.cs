@@ -10,6 +10,7 @@ namespace Backend.Dtos
         [Required(ErrorMessage = "El Service ID es obligatorio")]
         public int ServiceId { get; set; }
 
+        [Required(ErrorMessage = "El precio es obligatorio")]
         [Range(0, (double)decimal.MaxValue, ErrorMessage = "El precio debe ser mayor o igual a cero")]
         public decimal Price { get; set; }
 
@@ -18,11 +19,12 @@ namespace Backend.Dtos
 
         public string? Description { get; set; }
 
+        [Required(ErrorMessage = "La capacidad es obligatorio")]
         [Range(1, int.MaxValue, ErrorMessage = "La capacidad debe ser mayor a cero")]
         public int Capacity { get; set; }
     }
 
-    public class ShelterServiceUpdateDto
+    public class ShelterServicePutDto
     {
         [Required(ErrorMessage = "El Shelter ID es obligatorio")]
         public int ShelterId { get; set; }
@@ -30,13 +32,17 @@ namespace Backend.Dtos
         [Required(ErrorMessage = "El Service ID es obligatorio")]
         public int ServiceId { get; set; }
 
+        [Required(ErrorMessage = "El precio es obligatorio")]
         [Range(0, (double)decimal.MaxValue, ErrorMessage = "El precio debe ser mayor o igual a cero")]
-        public decimal? Price { get; set; }
+        public decimal Price { get; set; }
 
-        public bool? IsAvailable { get; set; }
+        [Required(ErrorMessage = "La disponibilidad es obligatorio")]
+        public bool IsAvailable { get; set; }
+
         public string? Description { get; set; }
 
+        [Required(ErrorMessage = "La capacidad es obligatorio")]
         [Range(1, int.MaxValue, ErrorMessage = "La capacidad debe ser mayor a cero")]
-        public int? Capacity { get; set; }
+        public int Capacity { get; set; }
     }
 }

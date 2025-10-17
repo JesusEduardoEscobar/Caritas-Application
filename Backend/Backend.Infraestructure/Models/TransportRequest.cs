@@ -7,7 +7,7 @@
         public int CarId { get; set; }
         public string PickupLocation { get; set; } = string.Empty;
         public string DropoffLocation { get; set; } = string.Empty;
-        public DateTime RequestDate { get; set; }
+        public DateTime RequestDate { get; set; } = DateTime.UtcNow;
         public ReservationStatus Status { get; set; }
     }
 

@@ -1,8 +1,8 @@
 using Backend.Dtos;
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using Backend.Infraestructure.Models;
-using Backend.Infrastructure.Database;
+using Backend.Infraestructure.Database;
 using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
@@ -36,12 +36,6 @@ namespace Backend.Implementations
                     query = query.Where(b => b.IsAvailable == available.Value);
 
                 var beds = await query.ToListAsync();
-
-                if (beds == null || !beds.Any())
-                {
-                    _logger.LogWarning("No se encontraron camas en la base de datos.");
-                    return GlobalResponse<IEnumerable<Bed>>.Fault("Camas no encontradas", "404", null);
-                }
 
                 _logger.LogInformation("Se obtuvieron {Count} camas correctamente.", beds.Count);
                 return GlobalResponse<IEnumerable<Bed>>.Success(beds, beds.Count, "Obtención de Camas exitoso", "200");
@@ -78,29 +72,29 @@ namespace Backend.Implementations
 
         #region POST
 
-        public async Task<GlobalResponse<Bed>> CreateBed(BedCreateDto bedDto)
+        public async Task<GlobalResponse<Bed>> CreateBed(BedCreateDto dto)
         {
             try
             {
-                if (bedDto == null)
+                if (dto == null)
                 {
                     _logger.LogWarning("Intento de crear cama con datos nulos.");
                     return GlobalResponse<Bed>.Fault("Datos inválidos", "400", null);
                 }
 
                 bool shelterExists = await _context.Shelters
-                    .AnyAsync(s => s.Id == bedDto.ShelterId);
+                    .AnyAsync(s => s.Id == dto.ShelterId);
                 if (!shelterExists)
                 {
-                    _logger.LogWarning("El ShelterId {ShelterId} no existe.", bedDto.ShelterId);
-                    return GlobalResponse<Bed>.Fault($"El refugio con ID {bedDto.ShelterId} no existe.", "404", null);
+                    _logger.LogWarning("El ShelterId {ShelterId} no existe.", dto.ShelterId);
+                    return GlobalResponse<Bed>.Fault($"El refugio con ID {dto.ShelterId} no existe.", "404", null);
                 }
 
                 var bed = new Bed
                 {
-                    ShelterId = bedDto.ShelterId,
-                    BedNumber = bedDto.BedNumber,
-                    IsAvailable = bedDto.IsAvailable
+                    ShelterId = dto.ShelterId,
+                    BedNumber = dto.BedNumber,
+                    IsAvailable = dto.IsAvailable
                 };
 
                 _context.Beds.Add(bed);
@@ -120,41 +114,42 @@ namespace Backend.Implementations
 
         #region PUT
 
-        public async Task<GlobalResponse<Bed>> UpdateBed(BedUpdateDto bedDto)
+        public async Task<GlobalResponse<Bed>> UpdateBed(BedPutDto dto)
         {
             try
             {
-                if (bedDto.ShelterId != null)
+                bool shelterExists = await _context.Shelters
+                    .AnyAsync(s => s.Id == dto.ShelterId);
+                if (!shelterExists)
                 {
-                    bool shelterExists = await _context.Shelters
-                        .AnyAsync(s => s.Id == bedDto.ShelterId);
-                    if (!shelterExists)
-                    {
-                        _logger.LogWarning("El ShelterId {ShelterId} no existe.", bedDto.ShelterId);
-                        return GlobalResponse<Bed>.Fault($"El refugio con ID {bedDto.ShelterId} no existe.", "404", null);
-                    }
+                    _logger.LogWarning("El ShelterId {ShelterId} no existe.", dto.ShelterId);
+                    return GlobalResponse<Bed>.Fault($"El refugio con ID {dto.ShelterId} no existe.", "404", null);
                 }
-
-                var existing = await _context.Beds.FindAsync(bedDto.Id);
+                
+                var existing = await _context.Beds.FindAsync(dto.Id);
                 if (existing == null)
                 {
-                    _logger.LogWarning("Cama {Id} no encontrada para actualizar.", bedDto.Id);
+                    _logger.LogWarning("Cama {Id} no encontrada para actualizar.", dto.Id);
                     return GlobalResponse<Bed>.Fault("Cama no encontrada", "404", null);
                 }
 
-                if (bedDto.ShelterId.HasValue) existing.ShelterId = bedDto.ShelterId.Value;
-                if (!string.IsNullOrEmpty(bedDto.BedNumber)) existing.BedNumber = bedDto.BedNumber;
-                if (bedDto.IsAvailable.HasValue) existing.IsAvailable = bedDto.IsAvailable.Value;
+                var newBed = new Bed
+                {
+                    Id = dto.Id,
+                    ShelterId = dto.ShelterId,
+                    BedNumber = dto.BedNumber,
+                    IsAvailable = dto.IsAvailable
+                };
 
-                _context.Entry(existing).State = EntityState.Modified;
+                _context.Entry(existing).CurrentValues.SetValues(newBed);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Cama {Id} actualizada correctamente.", bedDto.Id);
+                _logger.LogInformation("Cama {Id} actualizada correctamente.", dto.Id);
                 return GlobalResponse<Bed>.Success(existing, 1, "Cama actualizada exitosamente", "200");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar cama {Id}.", bedDto.Id);
+                _logger.LogError(ex, "Error al actualizar cama {Id}.", dto.Id);
                 return GlobalResponse<Bed>.Fault("Error al actualizar cama", "-1", null);
             }
         }
@@ -163,28 +158,27 @@ namespace Backend.Implementations
 
         #region PATCH
 
-        public async Task<GlobalResponse<Bed>> UpdateBedAvailability(BedUpdateAvailabilityDto bedDto)
+        public async Task<GlobalResponse<Bed>> UpdateBedAvailability(BedPatchAvailabilityDto dto)
         {
             try
             {
-                var existing = await _context.Beds.FindAsync(bedDto.Id);
+                var existing = await _context.Beds.FindAsync(dto.Id);
                 if (existing == null)
                 {
-                    _logger.LogWarning("Cama {Id} no encontrada para actualizar.", bedDto.Id);
+                    _logger.LogWarning("Cama {Id} no encontrada para actualizar.", dto.Id);
                     return GlobalResponse<Bed>.Fault("Cama no encontrada", "404", null);
                 }
 
-                existing.IsAvailable = bedDto.IsAvailable;
+                existing.IsAvailable = dto.IsAvailable;
 
-                _context.Entry(existing).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Cama {Id} actualizada correctamente.", bedDto.Id);
+                _logger.LogInformation("Cama {Id} actualizada correctamente.", dto.Id);
                 return GlobalResponse<Bed>.Success(existing, 1, "Cama actualizada exitosamente", "200");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar cama {Id}.", bedDto.Id);
+                _logger.LogError(ex, "Error al actualizar cama {Id}.", dto.Id);
                 return GlobalResponse<Bed>.Fault("Error al actualizar cama", "-1", null);
             }
         }

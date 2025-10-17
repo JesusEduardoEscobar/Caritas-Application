@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Backend.Infraestructure.Implementations;
 
-namespace Backend.Infraestructure.Interfaces
+namespace Backend.Interfaces
 {
     public interface IAuthenticator
     {

@@ -1,12 +1,10 @@
 ﻿using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
 using Backend.Infraestructure.Models;
-using Backend.Infrastructure.Database;
-using DocumentFormat.OpenXml.Spreadsheet;
+using Backend.Infraestructure.Database;
+using Backend.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Text;
 

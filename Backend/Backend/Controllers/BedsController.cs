@@ -1,20 +1,13 @@
 using Backend.Dtos;
-using Backend.Implementations;
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using Backend.Infraestructure.Models;
-using Backend.Infraestructure.Objects;
-using Backend.Infrastructure.Database;
-using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Office2016.Excel;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers
 {
-
+    //[Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class BedsController : ControllerBase
@@ -26,6 +19,7 @@ namespace Backend.Controllers
             _beds = beds;
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Bed>>> GetBeds([FromQuery] int? shelterId = null, [FromQuery] bool? available = null)
         {
@@ -33,6 +27,7 @@ namespace Backend.Controllers
             return MapResponse(response);
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Bed>> GetBed(int id)
         {
@@ -41,38 +36,32 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Bed>> CreateBed([FromBody] BedCreateDto bedDto)
+        public async Task<ActionResult<Bed>> CreateBed([FromBody] BedCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            var response = await _beds.CreateBed(bedDto);
+            var response = await _beds.CreateBed(dto);
             return MapResponse(response, created: true);
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult<Bed>> UpdateBed(int id, [FromBody] BedUpdateDto bedDto)
+        [HttpPut]
+        public async Task<ActionResult<Bed>> UpdateBed([FromBody] BedPutDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            if (id != bedDto.Id)
-                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
-
-            var response = await _beds.UpdateBed(bedDto);
+            var response = await _beds.UpdateBed(dto);
             return MapResponse(response);
         }
 
-        [HttpPatch("{id:int}/availability")]
-        public async Task<ActionResult<Bed>> UpdateBedAvailability(int id, [FromBody] BedUpdateAvailabilityDto bedDto)
+        [HttpPatch("availability")]
+        public async Task<ActionResult<Bed>> UpdateBedAvailability([FromBody] BedPatchAvailabilityDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            if (id != bedDto.Id)
-                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
-
-            var response = await _beds.UpdateBedAvailability(bedDto);
+            var response = await _beds.UpdateBedAvailability(dto);
             return MapResponse(response);
         }
 

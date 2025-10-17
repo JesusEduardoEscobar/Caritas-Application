@@ -52,7 +52,7 @@ namespace Backend.Infraestructure.Implementations
         }
 
 
-        public static GlobalResponse<T> Success()
+        public static GlobalResponse<T> Success(Models.Reservation reservation)
         {
             return Success("", 0);
         }

@@ -1,16 +1,17 @@
 using Backend.Dtos;
 using Backend.Infraestructure.Implementations;
-using Backend.Infraestructure.Interfaces;
+using Backend.Interfaces;
 using Backend.Infraestructure.Models;
-using Backend.Infrastructure.Database;
 using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Backend.Controllers
 {
+    //[Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class ShelterServicesController : ControllerBase
@@ -22,6 +23,7 @@ namespace Backend.Controllers
             _shelterServices = shelterServices;
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ShelterService>>> GetShelterServices()
         {
@@ -29,6 +31,7 @@ namespace Backend.Controllers
             return MapResponse(response);
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet("{shelterId:int}")]
         public async Task<ActionResult<IEnumerable<ShelterService>>> GetShelterServicesByShelter(int shelterId)
         {
@@ -36,6 +39,7 @@ namespace Backend.Controllers
             return MapResponse(response);
         }
 
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet("{shelterId:int}/{serviceId:int}")]
         public async Task<ActionResult<ShelterService>> GetShelterService(int shelterId, int serviceId)
         {
@@ -44,25 +48,22 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ShelterService>> CreateShelterService([FromBody] ShelterServiceCreateDto shelterServiceDto)
+        public async Task<ActionResult<ShelterService>> CreateShelterService([FromBody] ShelterServiceCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            var response = await _shelterServices.CreateShelterService(shelterServiceDto);
+            var response = await _shelterServices.CreateShelterService(dto);
             return MapResponse(response, created: true);
         }
 
-        [HttpPut("{shelterId:int}/{serviceId:int}")]
-        public async Task<ActionResult<ShelterService>> UpdateShelterService(int shelterId, int serviceId, [FromBody] ShelterServiceUpdateDto shelterServiceDto)
+        [HttpPut]
+        public async Task<ActionResult<ShelterService>> UpdateShelterService([FromBody] ShelterServicePutDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            if (shelterId != shelterServiceDto.ShelterId || serviceId != shelterServiceDto.ServiceId)
-                return BadRequest(GlobalResponse<string>.Fault("Los IDs del cuerpo no coincide con la URL", "400", null));
-
-            var response = await _shelterServices.UpdateShelterService(shelterServiceDto);
+            var response = await _shelterServices.UpdateShelterService(dto);
             return MapResponse(response);
         }
 
