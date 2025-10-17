@@ -1,10 +1,12 @@
 using Backend.Dtos;
-using Backend.Infraestructure.Implementations;
-using Backend.Interfaces;
-using Backend.Infraestructure.Models;
 using Backend.Infraestructure.Database;
+using Backend.Infraestructure.Implementations;
+using Backend.Infraestructure.Models;
+using Backend.Interfaces;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Vml.Office;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
 
@@ -14,6 +16,7 @@ namespace Backend.Implementations
     {
         private readonly NeonTechDbContext _context;
         private readonly ILogger<ReservationsManager> _logger;
+        private const double _hoursBetweenReservations = 2;
 
         public ReservationsManager(NeonTechDbContext context, ILogger<ReservationsManager> logger)
         {
@@ -29,16 +32,17 @@ namespace Backend.Implementations
             {
                 var query = _context.Reservations
                     .Join(_context.Beds, r => r.BedId, b => b.Id, (r, b) => new { r, b })
-                    .Join(_context.Shelters, rb => rb.b.ShelterId, s => s.Id, (rb, s) => new ReservationQueryDto
+                    .Join(_context.Shelters, rb => rb.b.ShelterId, s => s.Id, (rb, s) => new
                     {
-                        Id = rb.r.Id,
-                        UserId = rb.r.UserId,
-                        BedId = rb.r.BedId,
+                        rb.r.Id,
+                        rb.r.UserId,
+                        rb.r.BedId,
                         ShelterId = s.Id,
-                        StartDate = rb.r.StartDate,
-                        EndDate = rb.r.EndDate,
-                        Status = rb.r.Status,
-                        CreatedAt = rb.r.CreatedAt
+                        rb.r.StartDate,
+                        rb.r.EndDate,
+                        rb.r.Status,
+                        rb.r.CreatedAt,
+                        rb.r.QrData
                     }).AsQueryable();
 
                 if (shelterId.HasValue)
@@ -59,14 +63,9 @@ namespace Backend.Implementations
                         StartDate = r.StartDate,
                         EndDate = r.EndDate,
                         Status = r.Status,
-                        CreatedAt = r.CreatedAt
+                        CreatedAt = r.CreatedAt,
+                        QrData = r.QrData
                     }).ToListAsync();
-
-                if (reservations == null || !reservations.Any())
-                {
-                    _logger.LogWarning("No se encontraron reservaciones en la base de datos.");
-                    return GlobalResponse<IEnumerable<Reservation>>.Fault("Reservaciones no encontradas", "404", null);
-                }
 
                 _logger.LogInformation("Se obtuvieron {Count} reservaciones correctamente.", reservations.Count);
                 return GlobalResponse<IEnumerable<Reservation>>.Success(reservations, reservations.Count, "Obtención de Reservaciones exitoso", "200");
@@ -99,44 +98,75 @@ namespace Backend.Implementations
             }
         }
 
+        public async Task<GlobalResponse<Reservation>> GetReservation(string qrData)
+        {
+            try
+            {
+                var reservation = await _context.Reservations
+                    .Where(r => r.QrData == qrData)
+                    .FirstOrDefaultAsync();
+
+                if (reservation == null)
+                {
+                    _logger.LogWarning("Reservacion QR {qrData} no encontrada.", qrData);
+                    return GlobalResponse<Reservation>.Fault("Reservacion no encontrada", "404", null);
+                }
+
+                _logger.LogInformation("Reservacion QR {qrData} obtenida correctamente.", qrData);
+                return GlobalResponse<Reservation>.Success(reservation, 1, "Obtención de Reservacion exitosa", "200");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener Reservacion con QR {qrData}.", qrData);
+                return GlobalResponse<Reservation>.Fault("Error al procesar Reservaciones", "-1", null);
+            }
+        }
+
         #endregion
 
         #region POST
 
-        public async Task<GlobalResponse<Reservation>> CreateReservation(ReservationCreateDto reservationDto)
+        public async Task<GlobalResponse<Reservation>> CreateReservation(ReservationCreateDto dto)
         {
             try
             {
-                if (reservationDto == null)
+                if (dto == null)
                 {
                     _logger.LogWarning("Intento de crear cama con datos nulos.");
                     return GlobalResponse<Reservation>.Fault("Datos inválidos", "400", null);
                 }
 
-                bool userExists = await _context.Users
-                    .AnyAsync(u => u.Id == reservationDto.UserId);
-                if (!userExists)
+                if (dto.StartDate >= dto.EndDate)
                 {
-                    _logger.LogWarning("El UserId {UserId} no existe.", reservationDto.UserId);
-                    return GlobalResponse<Reservation>.Fault($"El usuario con ID {reservationDto.UserId} no existe.", "404", null);
+                    _logger.LogWarning("Intento de crear reservacion con fechas incorrectas. StartDate >= EndDate");
+                    return GlobalResponse<Reservation>.Fault("Datos inválidos, fechas incorrectas", "400", null);
                 }
 
-                bool bedExists = await _context.Beds
-                    .AnyAsync(b => b.Id == reservationDto.BedId);
-                if (!bedExists)
+                bool userExists = await _context.Users
+                    .AnyAsync(u => u.Id == dto.UserId);
+                if (!userExists)
                 {
-                    _logger.LogWarning("El BedId {BedId} no existe.", reservationDto.BedId);
-                    return GlobalResponse<Reservation>.Fault($"La cama con ID {reservationDto.BedId} no existe.", "404", null);
+                    _logger.LogWarning("El UserId {UserId} no existe.", dto.UserId);
+                    return GlobalResponse<Reservation>.Fault($"El usuario con ID {dto.UserId} no existe.", "404", null);
+                }
+
+                var availableBed = await FindAvailableBedId(dto.ShelterId, dto.StartDate, dto.EndDate);
+
+                if (availableBed == null)
+                {
+                    _logger.LogWarning("No hay camas disponibles en ShelterId {ShelterId}.", dto.ShelterId);
+                    return GlobalResponse<Reservation>.Fault($"No hay camas disponibles en ShelterId {dto.ShelterId}.", "409", null);
                 }
 
                 var reservation = new Reservation
                 {
-                    UserId = reservationDto.UserId,
-                    BedId = reservationDto.BedId,
-                    StartDate = reservationDto.StartDate,
-                    EndDate = reservationDto.EndDate,
+                    UserId = dto.UserId,
+                    BedId = availableBed.Id,
+                    StartDate = dto.StartDate,
+                    EndDate = dto.EndDate,
                     Status = ReservationStatus.reserved,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    QrData = $"BED-{availableBed.Id}-U-{dto.UserId}-{Guid.NewGuid()}"
                 };
 
                 _context.Reservations.Add(reservation);
@@ -152,115 +182,68 @@ namespace Backend.Implementations
             }
         }
 
-
-        #endregion
-
-        #region PUT
-
-        public async Task<GlobalResponse<Reservation>> UpdateReservation(ReservationUpdateDto reservationDto)
-        {
-            try
-            {
-                if (reservationDto == null)
-                {
-                    _logger.LogWarning("Intento de actualizar reservacion con datos nulos.");
-                    return GlobalResponse<Reservation>.Fault("Datos inválidos", "400", null);
-                }
-
-                if (reservationDto.BedId != null)
-                {
-                    bool bedExists = await _context.Beds
-                        .AnyAsync(b => b.Id == reservationDto.BedId);
-                    if (!bedExists)
-                    {
-                        _logger.LogWarning("El BedId {BedId} no existe.", reservationDto.BedId);
-                        return GlobalResponse<Reservation>.Fault($"La cama con ID {reservationDto.BedId} no existe.", "404", null);
-                    }
-                }
-
-                var existing = await _context.Reservations.FindAsync(reservationDto.Id);
-                if (existing == null)
-                {
-                    _logger.LogWarning("Reservacion {Id} no encontrada para actualizar.", reservationDto.Id);
-                    return GlobalResponse<Reservation>.Fault("Reservacion no encontrada", "404", null);
-                }
-
-                if (reservationDto.BedId.HasValue) existing.BedId = reservationDto.BedId.Value;
-                if (reservationDto.StartDate.HasValue) existing.StartDate = reservationDto.StartDate.Value;
-                if (reservationDto.EndDate.HasValue) existing.EndDate = reservationDto.EndDate.Value;
-                if (reservationDto.Status.HasValue) existing.Status = reservationDto.Status.Value;
-
-                _context.Entry(existing).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-
-                _logger.LogInformation("Reservacion {Id} actualizada correctamente.", reservationDto.Id);
-                return GlobalResponse<Reservation>.Success(existing, 1, "Reservacion actualizada exitosamente", "200");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al actualizar reservacion {Id}.", reservationDto.Id);
-                return GlobalResponse<Reservation>.Fault("Error al actualizar reservacion", "-1", null);
-            }
-        }
-
         #endregion
 
         #region PATCH
 
-        public async Task<GlobalResponse<Reservation>> UpdateReservationStatus(ReservationUpdateStatusDto reservationDto)
+        public async Task<GlobalResponse<Reservation>> UpdateReservationStatus(ReservationPatchStatusDto dto)
         {
             try
             {
-                var existing = await _context.Reservations.FindAsync(reservationDto.Id);
+                var existing = await _context.Reservations.FindAsync(dto.Id);
                 if (existing == null)
                 {
-                    _logger.LogWarning("Reservacion {Id} no encontrada para actualizar.", reservationDto.Id);
+                    _logger.LogWarning("Reservacion {Id} no encontrada para actualizar.", dto.Id);
                     return GlobalResponse<Reservation>.Fault("Reservacion no encontrada", "404", null);
                 }
 
-                existing.Status = reservationDto.Status;
+                existing.Status = dto.Status;
 
-                _context.Entry(existing).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Reservacion {Id} actualizada correctamente.", reservationDto.Id);
+                _logger.LogInformation("Reservacion {Id} actualizada correctamente.", dto.Id);
                 return GlobalResponse<Reservation>.Success(existing, 1, "Reservacion actualizada exitosamente", "200");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar reservacion {Id}.", reservationDto.Id);
+                _logger.LogError(ex, "Error al actualizar reservacion {Id}.", dto.Id);
                 return GlobalResponse<Reservation>.Fault("Error al actualizar reservacion", "-1", null);
             }
         }
 
-        public async Task<GlobalResponse<Reservation>> UpdateReservationPeriod(ReservationUpdatePeriodDto reservationDto)
+        public async Task<GlobalResponse<Reservation>> UpdateReservationPeriod(ReservationPatchPeriodDto dto)
         {
             try
             {
-                if (reservationDto.StartDate > reservationDto.EndDate)
+                if (dto.StartDate >= dto.EndDate)
                 {
-                    _logger.LogWarning("Intento de actualizar reservacion con fechas incorrectas.");
+                    _logger.LogWarning("Intento de actualizar reservacion con fechas incorrectas. StartDate >= EndDate");
                     return GlobalResponse<Reservation>.Fault("Datos inválidos, fechas incorrectas", "400", null);
                 }
-                var existing = await _context.Reservations.FindAsync(reservationDto.Id);
+                var existing = await _context.Reservations.FindAsync(dto.Id);
                 if (existing == null)
                 {
-                    _logger.LogWarning("Reservacion {Id} no encontrada para actualizar.", reservationDto.Id);
+                    _logger.LogWarning("Reservacion {Id} no encontrada para actualizar.", dto.Id);
                     return GlobalResponse<Reservation>.Fault("Reservacion no encontrada", "404", null);
                 }
 
-                existing.StartDate = reservationDto.StartDate;
-                existing.EndDate = reservationDto.EndDate;
+                if(await HasDateConflict(existing.BedId, dto.StartDate, dto.EndDate))
+                {
+                    _logger.LogWarning("Conflicto de fechas al actualizar Reservacion {dto.Id}.", dto.Id);
+                    return GlobalResponse<Reservation>.Fault($"Conflicto de fechas al actualizar Reservacion {dto.Id}, debe haber un umbral de {_hoursBetweenReservations} horas entre reservaciones del mismo cuarto", "409", null);
+                }
 
-                _context.Entry(existing).State = EntityState.Modified;
+                existing.StartDate = dto.StartDate;
+                existing.EndDate = dto.EndDate;
+
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("Reservacion {Id} actualizada correctamente.", reservationDto.Id);
+                _logger.LogInformation("Reservacion {Id} actualizada correctamente.", dto.Id);
                 return GlobalResponse<Reservation>.Success(existing, 1, "Reservacion actualizada exitosamente", "200");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar reservacion {Id}.", reservationDto.Id);
+                _logger.LogError(ex, "Error al actualizar reservacion {Id}.", dto.Id);
                 return GlobalResponse<Reservation>.Fault("Error al actualizar reservacion", "-1", null);
             }
         }
@@ -294,6 +277,38 @@ namespace Backend.Implementations
         }
 
         #endregion
+
+
+        private async Task<bool> HasDateConflict(int bedId, DateTime startDate, DateTime endDate)
+        {
+            return await _context.Reservations
+                .AnyAsync(r => r.BedId == bedId
+                       && (r.Status == ReservationStatus.reserved || r.Status == ReservationStatus.checked_in)
+                       && (startDate.AddHours(-_hoursBetweenReservations) < r.EndDate) && (endDate.AddHours(_hoursBetweenReservations) > r.StartDate)
+                );
+        }
+
+        private async Task<Bed?> FindAvailableBedId(int shelterId, DateTime startDate, DateTime endDate)
+        {
+            var availableBed = await _context.Beds
+                .Where(b => b.ShelterId == shelterId)
+                .GroupJoin( 
+                    // Camas con reservas en conflicto
+                    _context.Reservations.Where(r =>
+                        (r.Status == ReservationStatus.reserved || r.Status == ReservationStatus.checked_in)
+                        && (startDate.AddHours(-_hoursBetweenReservations) < r.EndDate) && (endDate.AddHours(_hoursBetweenReservations) > r.StartDate)
+                    ),
+                    b => b.Id,
+                    r => r.BedId,
+                    (b, reservations) => new { Bed = b, Reservations = reservations }
+                )
+                .Where(x => !x.Reservations.Any()) // solo camas sin reservas conflictivas
+                .OrderBy(x => x.Bed.Id)
+                .Select(x => x.Bed)
+                .FirstOrDefaultAsync();
+
+            return availableBed;
+        }
 
     }
 }

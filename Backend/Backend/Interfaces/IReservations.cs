@@ -14,16 +14,14 @@ namespace Backend.Interfaces
         // Get
         Task<GlobalResponse<IEnumerable<Reservation>>> GetReservations(int? shelterId = null, int? userId = null, ReservationStatus? status = null);
         Task<GlobalResponse<Reservation>> GetReservation(int id);
+        Task<GlobalResponse<Reservation>> GetReservation(string qrData);
 
         // Post
-        Task<GlobalResponse<Reservation>> CreateReservation(ReservationCreateDto reservationDto);
-
-        // Put
-        Task<GlobalResponse<Reservation>> UpdateReservation(ReservationUpdateDto reservationDto);
+        Task<GlobalResponse<Reservation>> CreateReservation(ReservationCreateDto dto);
 
         // Patch
-        Task<GlobalResponse<Reservation>> UpdateReservationStatus(ReservationUpdateStatusDto reservationDto);
-        Task<GlobalResponse<Reservation>> UpdateReservationPeriod(ReservationUpdatePeriodDto reservationDto);
+        Task<GlobalResponse<Reservation>> UpdateReservationStatus(ReservationPatchStatusDto dto);
+        Task<GlobalResponse<Reservation>> UpdateReservationPeriod(ReservationPatchPeriodDto dto);
 
         // Delete
         Task<GlobalResponse<Reservation>> DeleteReservation(int id);

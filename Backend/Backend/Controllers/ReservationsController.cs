@@ -49,42 +49,23 @@ namespace Backend.Controllers
             return MapResponse(response, created: true);
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult<Reservation>> UpdateReservation(int id, [FromBody] ReservationUpdateDto reservationDto)
+        [HttpPatch("status")]
+        public async Task<ActionResult<Reservation>> UpdateReservationStatus([FromBody] ReservationPatchStatusDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            if (id != reservationDto.Id)
-                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
-
-            var response = await _reservations.UpdateReservation(reservationDto);
+            var response = await _reservations.UpdateReservationStatus(dto);
             return MapResponse(response);
         }
 
-        [HttpPatch("{id:int}/status")]
-        public async Task<ActionResult<Reservation>> UpdateReservationStatus(int id, [FromBody] ReservationUpdateStatusDto reservationDto)
+        [HttpPatch("period")]
+        public async Task<ActionResult<Reservation>> UpdateReservationPeriod([FromBody] ReservationPatchPeriodDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
 
-            if (id != reservationDto.Id)
-                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
-
-            var response = await _reservations.UpdateReservationStatus(reservationDto);
-            return MapResponse(response);
-        }
-
-        [HttpPatch("{id:int}/period")]
-        public async Task<ActionResult<Reservation>> UpdateReservationPeriod(int id, [FromBody] ReservationUpdatePeriodDto reservationDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(GlobalResponse<string>.Fault("Datos inválidos", "400", null));
-
-            if (id != reservationDto.Id)
-                return BadRequest(GlobalResponse<string>.Fault("El ID del cuerpo no coincide con la URL", "400", null));
-
-            var response = await _reservations.UpdateReservationPeriod(reservationDto);
+            var response = await _reservations.UpdateReservationPeriod(dto);
             return MapResponse(response);
         }
 
