@@ -1,7 +1,7 @@
 // src/services/authService.ts
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5086/api'; // Ajusta según tu entorno
+export const API_URL = 'http://localhost:5086/api'; // Ajusta según tu entorno
 
 export const loginUser = async (email: string, password: string) => {
   try {
@@ -18,3 +18,7 @@ export const loginUser = async (email: string, password: string) => {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
 };
+
+//export const registerUser = async (name: string, email: string, password: string)
+
+//export const  registerAdmin = async (name: string, email: string, password: string)
