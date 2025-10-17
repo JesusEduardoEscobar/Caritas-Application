@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BCrypt.Net;
 
 namespace Backend.Implementations
 {
@@ -23,18 +24,36 @@ namespace Backend.Implementations
         {
             try
             {
-                var user = await _context.Users
-                    .Where(u => u.Email == email && u.Password == password)
-                    .FirstOrDefaultAsync();
+                var userEntity = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == email);
 
-                if (user == null) return GlobalResponse<dynamic>.Fault("Usuario no encontrado", "404", null);
+                if (userEntity == null)
+                {
+                    return GlobalResponse<dynamic>.Fault("Credenciales inválidas", "401", null);
+                }
 
-                var token = GenerateJwtToken(user);
+                if (!BCrypt.Net.BCrypt.Verify(password, userEntity.Password))
+                {
+                    return GlobalResponse<dynamic>.Fault("Formato de la constraseña incorecto", "401", null);
+                }
+
+                var token = GenerateJwtToken(userEntity);
 
                 var response = new
                 {
                     Token = token,
-                    User = user
+                    User = new
+                    {
+                        userEntity.Id,
+                        userEntity.Name,
+                        userEntity.Email,
+                        userEntity.DateOfBirth,
+                        userEntity.Phone,
+                        userEntity.EconomicLevel,
+                        userEntity.Verified,
+                        userEntity.ShelterId,
+                        Role = userEntity.Role.ToString()
+                    }
                 };
 
                 return GlobalResponse<dynamic>.Success(response, 1, "Autenticación exitosa", "200");

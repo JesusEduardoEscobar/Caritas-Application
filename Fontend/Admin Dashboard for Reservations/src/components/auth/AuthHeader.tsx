@@ -28,7 +28,7 @@ export function AuthHeader() {
     <div className="flex items-center space-x-4">
       <div className="hidden md:block text-right">
         <p className="text-sm">{admin.name ?? `Admin${admin.id}`}</p>
-        <p className="text-xs text-muted-foreground capitalize">{roleLabel}</p>
+        <p className="text-xs text-muted-foreground capitalize">{admin.role }</p>
       </div>
       
       <DropdownMenu>
