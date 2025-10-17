@@ -30,7 +30,11 @@ builder.Services.AddCors(options =>
 });
 
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 builder.Services.AddScoped<IAuthenticator, Authenticator>();
 builder.Services.AddScoped<IUsers, Login>();
@@ -72,6 +76,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    c.UseInlineDefinitionsForEnums();
+
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Mi API", Version = "v1" });
 
     // Configuración JWT
