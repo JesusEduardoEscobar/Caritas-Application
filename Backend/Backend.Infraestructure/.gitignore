@@ -5,6 +5,7 @@ obj/
 appsettings.json
 
 !Database/
+!Models/
 !Extensions/
 !Interfaces/
 !Objects

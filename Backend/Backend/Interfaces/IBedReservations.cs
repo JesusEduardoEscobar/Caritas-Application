@@ -1,5 +1,4 @@
 // Backend.Infraestructure/Interfaces/IServiceReservations.cs
-using Backend.Infrastructure.Dtos;
 using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Dtos; // si tu GlobalResponse está aquí
 

@@ -42,11 +42,11 @@ builder.Services.AddScoped<IUsers, Login>();
 builder.Services.AddScoped<IShelters, SheltersManager>();
 builder.Services.AddScoped<IServices, ServicesManager>();
 builder.Services.AddScoped<IShelterServices, ShelterServicesManager>();
-builder.Services.AddScoped<IServiceReservations, ServiceReservations>();
+builder.Services.AddScoped<IServiceReservations, ServiceReservationsManager>();
 
 builder.Services.AddScoped<IBeds, BedsManager>();
 builder.Services.AddScoped<IReservations, ReservationsManager>();
-builder.Services.AddScoped<IBedReservations, BedReservations>();
+builder.Services.AddScoped<IBedReservations, BedReservations>(); // remover más tarde si es posible
 
 builder.Services.AddScoped<ICars, CarsManager>();
 builder.Services.AddScoped<ITransportRequests, TransportRequestsManager>();

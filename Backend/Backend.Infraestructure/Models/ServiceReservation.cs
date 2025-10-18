@@ -7,6 +7,7 @@ namespace Backend.Infraestructure.Models
         public int ShelterId { get; set; }
         public int ServiceId { get; set; }
         public string QrData { get; set; } = string.Empty;
+        public DateTime ServiceDate { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = true;
     }

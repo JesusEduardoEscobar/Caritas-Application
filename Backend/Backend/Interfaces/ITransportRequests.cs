@@ -12,16 +12,18 @@ namespace Backend.Interfaces
     public interface ITransportRequests
     {
         // Get
-        Task<GlobalResponse<IEnumerable<TransportRequest>>> GetTransportRequests();
-        Task<GlobalResponse<TransportRequest>> GetTransportRequest(int transportRequestId);
+        Task<GlobalResponse<IEnumerable<TransportRequest>>> GetTransportRequests(int? userId = null, int? shelterId = null, DateTime? requestDate = null, ReservationStatus? status = null);
+        Task<GlobalResponse<TransportRequest>> GetTransportRequest(int id);
+        Task<GlobalResponse<TransportRequest>> GetTransportRequest(string qrData);
 
         // Post
-        Task<GlobalResponse<TransportRequest>> CreateTransportRequest(TransportRequestCreateDto transportRequestDto);
+        Task<GlobalResponse<TransportRequest>> CreateTransportRequest(TransportRequestCreateDto dto);
 
         // Patch
-        Task<GlobalResponse<TransportRequest>> PatchTransportRequest(TransportRequestPatchDto transportRequestDto);
+        Task<GlobalResponse<TransportRequest>> UpdateTransportRequest(TransportRequestPatchDto dto);
+        Task<GlobalResponse<TransportRequest>> UpdateTransportRequestStatus(TransportRequestPatchStatusDto dto);
 
         // Delete
-        Task<GlobalResponse<TransportRequest>> DeleteTransportRequest(int transportRequestId);
+        Task<GlobalResponse<TransportRequest>> DeleteTransportRequest(int id);
     }
 }
