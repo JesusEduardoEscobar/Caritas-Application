@@ -55,7 +55,7 @@ namespace Backend.Controllers
                     return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "400", null));
                 }
                 var response = await _auth.RegisterLite(request.Nombre, request.Email, request.Password, request.Numero, request.FechaDeNacimiento);
-                if (response == null || response.Data == null || !response.Data.Any())
+                if (response == null || response.Data == null)
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
                 }
