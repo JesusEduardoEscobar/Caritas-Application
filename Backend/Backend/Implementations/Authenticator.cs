@@ -85,25 +85,23 @@ namespace Backend.Implementations
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<GlobalResponse<dynamic>> RegisterLite(string nombre, string password, string numero)
+        public async Task<GlobalResponse<dynamic>> RegisterLite(string nombre, string email, string password, string numero, DateTime fechaDeNamicimiento)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(numero))
+                if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
                     return GlobalResponse<dynamic>.Fault("Todos los campos son obligatorios", "400", null);
 
-                var existe = await _context.Users.AnyAsync(u => u.Name == nombre || u.Phone == numero);
+                var existe = await _context.Users.AnyAsync(u => u.Email == email);
                 if (existe)
-                    return GlobalResponse<dynamic>.Fault("El nombre o número ya están en uso", "409", null);
-
-                if (!int.TryParse(numero, out int shelterId))
-                    return GlobalResponse<dynamic>.Fault("Número inválido", "400", null);
+                    return GlobalResponse<dynamic>.Fault("El correo ya está en uso", "409", null);
 
                 var nuevoUsuario = new User
                 {
                     Name = nombre,
+                    Email = email,
                     Password = BCrypt.Net.BCrypt.HashPassword(password),
-                    ShelterId = shelterId,
+                    DateOfBirth = fechaDeNamicimiento,
                     Verified = false,
                     Role = UserRole.user
                 };
@@ -115,7 +113,8 @@ namespace Backend.Implementations
                 {
                     nuevoUsuario.Id,
                     nuevoUsuario.Name,
-                    nuevoUsuario.Phone
+                    nuevoUsuario.Email,
+                    nuevoUsuario.DateOfBirth
                 };
 
                 return GlobalResponse<dynamic>.Success(result, 1, "Usuario registrado exitosamente", "201");
@@ -127,20 +126,22 @@ namespace Backend.Implementations
         }
 
         // REGISTRARLOS USUARIOS POR PARTE DE LOS ADMINISTRADORES
-        public async Task<GlobalResponse<dynamic>> RegisterUser(string nombre, string email, string password, string numero, string nivelEconomico, bool verificacion)
+        public async Task<GlobalResponse<dynamic>> RegisterUser(string email, string numero, string nivelEconomico, bool verificacion)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(email))
+                    return GlobalResponse<dynamic>.Fault("El correo es obligatorio", "400", null);
+
                 if (!int.TryParse(numero, out int shelterId))
                     return GlobalResponse<dynamic>.Fault("Número inválido", "400", null);
 
-                var usuario = await _context.Users.FirstOrDefaultAsync(u => u.ShelterId == shelterId);
+                var usuario = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
                 if (usuario == null)
-                    return GlobalResponse<dynamic>.Fault("Usuario no encontrado para ese ShelterId", "404", null);
+                    return GlobalResponse<dynamic>.Fault("Usuario no encontrado con ese correo", "404", null);
 
-                if (string.IsNullOrWhiteSpace(usuario.Name)) usuario.Name = nombre;
-                if (string.IsNullOrWhiteSpace(usuario.Email)) usuario.Email = email;
-                if (string.IsNullOrWhiteSpace(usuario.Password)) usuario.Password = BCrypt.Net.BCrypt.HashPassword(password);
+                // Solo actualiza si están vacíos
+                if (usuario.ShelterId == 0) usuario.ShelterId = shelterId;
 
                 if (Enum.TryParse<EconomicLevel>(nivelEconomico, true, out var nivel))
                     usuario.EconomicLevel = nivel;
@@ -155,18 +156,20 @@ namespace Backend.Implementations
                     usuario.Id,
                     usuario.Name,
                     usuario.Email,
+                    usuario.DateOfBirth,
                     usuario.ShelterId,
                     usuario.EconomicLevel,
                     usuario.Verified
                 };
 
-                return GlobalResponse<dynamic>.Success(result, 1, "Usuario registrado exitosamente", "201");
+                return GlobalResponse<dynamic>.Success(result, 1, "Usuario actualizado exitosamente", "200");
             }
             catch (Exception ex)
             {
-                return GlobalResponse<dynamic>.Fault($"Error al registrar usuario: {ex.Message}", "-1", null);
+                return GlobalResponse<dynamic>.Fault($"Error al actualizar usuario: {ex.Message}", "-1", null);
             }
         }
+
 
 
         // REGISTAR ADMINSITRADORES, SOLO ADMINS PUEDEN CREAR ADMINSITRADORES

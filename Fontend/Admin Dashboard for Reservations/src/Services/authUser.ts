@@ -5,7 +5,7 @@ const token = localStorage.getItem('token');
 
 export const getUsers = async () => {
     try{
-        const response = await axios.get(`${API_URL}/Users`, {
+        const response = await axios.get(`${API_URL}/Users/allUsers`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -20,7 +20,7 @@ export const getUsers = async () => {
 
 export const getUserByID = async (id: number) => {
     try {
-        const response = await axios.get(`${API_URL}/Users/getById/${id}`, {
+        const response = await axios.get(`${API_URL}/Users/${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -31,3 +31,18 @@ export const getUserByID = async (id: number) => {
         return null;
     }
 }
+
+export const getUserByShelter = async (id: number) => {
+    try {
+        const response = await axios.get(`${API_URL}/Users/filter-by-shelter/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener usuarios por refugio:', error);
+        return null;
+    }
+}
+
