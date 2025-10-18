@@ -1,7 +1,8 @@
 using Backend.Infraestructure.Implementations;
+using Backend.Infraestructure.Models;
+using Backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Backend.Interfaces;
 
 namespace Backend.Controllers
 {
@@ -44,5 +45,96 @@ namespace Backend.Controllers
         }
 
 
+        [HttpPost("register-lite")]
+        public async Task<IActionResult> RegisterLite([FromBody] UserRegistrationRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Nombre) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.Numero))
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "400", null));
+                }
+                var response = await _auth.RegisterLite(request.Nombre, request.Password, request.Numero);
+                if (response == null || response.Data == null || !response.Data.Any())
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [HttpPost("register-user")]
+        public async Task<IActionResult> RegisterUser([FromBody] UserRegistrationRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Nombre) || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.Numero) || string.IsNullOrWhiteSpace(request.NivelEconomico) || request.Verificacion == null)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "400", null));
+                }
+                var response = await _auth.RegisterUser(request.Nombre, request.Email, request.Password, request.Numero, request.NivelEconomico, request.Verificacion.Value);
+                if (response == null || response.Data == null || !response.Data.Any())
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [HttpPost("register-admin")]
+        public async Task<IActionResult> RegisterAdmin([FromBody] UserRegistrationRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.EmailAdmin) || string.IsNullOrWhiteSpace(request.PasswordAdmin))
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "400", null));
+                }
+                var response = await _auth.RegisterAdmin(request.Nombre, request.Email, request.Password, request.EmailAdmin, request.PasswordAdmin);
+                if (response == null || response.Data == null || !response.Data.Any())
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [HttpPost("verify-user")]
+        public async Task<IActionResult> VerifyUser([FromBody] VerifyUserRequest request)
+        {
+            try
+            {
+                if (request.Id <= 0)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("El ID del usuario debe ser mayor que cero", "400", null));
+                }
+                var response = await _auth.VerifyUser(request.Id, request.Verificacion);
+                if (response == null || response.Data == null || !response.Data.Any())
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Error al verificar usuario", "400", null));
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
     }
 }
