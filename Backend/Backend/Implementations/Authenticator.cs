@@ -1,13 +1,15 @@
-﻿using Backend.Infraestructure.Implementations;
+﻿using Backend.Infraestructure.Database;
+using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Models;
-using Backend.Infraestructure.Database;
 using Backend.Interfaces;
+using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using BCrypt.Net;
+using System.Text.RegularExpressions;
 
 namespace Backend.Implementations
 {
@@ -85,7 +87,7 @@ namespace Backend.Implementations
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public async Task<GlobalResponse<dynamic>> RegisterLite(string nombre, string email, string password, string numero, DateTime fechaDeNamicimiento)
+        public async Task<GlobalResponse<dynamic>> RegisterLite(string nombre, string email, string password, string numero, DateTime fechaDeNacimiento)
         {
             try
             {
@@ -95,13 +97,21 @@ namespace Backend.Implementations
                 var existe = await _context.Users.AnyAsync(u => u.Email == email);
                 if (existe)
                     return GlobalResponse<dynamic>.Fault("El correo ya está en uso", "409", null);
+                if (fechaDeNacimiento > DateTime.Today)
+                    return GlobalResponse<dynamic>.Fault("La fecha de nacimiento no puede ser futura", "400", null);
+                if (!new EmailAddressAttribute().IsValid(email))
+                    return GlobalResponse<dynamic>.Fault("Correo inválido", "400", null);
+                if (!Regex.IsMatch(numero, @"^\d{10}$"))
+                    return GlobalResponse<dynamic>.Fault("El número de teléfono debe tener 10 dígitos", "400", null);
 
                 var nuevoUsuario = new User
                 {
                     Name = nombre,
                     Email = email,
+                    Phone = numero,
                     Password = BCrypt.Net.BCrypt.HashPassword(password),
-                    DateOfBirth = fechaDeNamicimiento,
+                    EconomicLevel =  0,
+                    DateOfBirth = fechaDeNacimiento,
                     Verified = false,
                     Role = UserRole.user
                 };
