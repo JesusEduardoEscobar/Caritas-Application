@@ -1,4 +1,3 @@
-using Backend.Infrastructure.Dtos;
 using Backend.Interfaces;
 using QRCoder;
 using Microsoft.AspNetCore.Mvc;

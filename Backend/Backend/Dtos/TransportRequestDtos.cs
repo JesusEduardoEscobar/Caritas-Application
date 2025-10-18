@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Backend.Infraestructure.Models;
 
 namespace Backend.Dtos
 {
@@ -10,8 +11,20 @@ namespace Backend.Dtos
         [Required(ErrorMessage = "El Shelter ID es obligatorio")]
         public int ShelterId { get; set; }
 
+        [Required(ErrorMessage = "La Ubicación de Origen es obligatorio")]
+        public string PickupLocation { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La Ubicación de Destino es obligatorio")]
+        public string DropoffLocation { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La fecha de Peticion es obligatoria")]
+        public DateTime RequestDate { get; set; }
+    }
+
+    public class TransportRequestPatchDto
+    {
         [Required(ErrorMessage = "El Service ID es obligatorio")]
-        public int ServiceId { get; set; }
+        public int Id { get; set; }
 
         [Required(ErrorMessage = "La Ubicación de Origen es obligatorio")]
         public string PickupLocation { get; set; } = string.Empty;
@@ -19,15 +32,17 @@ namespace Backend.Dtos
         [Required(ErrorMessage = "La Ubicación de Destino es obligatorio")]
         public string DropoffLocation { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El Service ID es obligatorio")]
+        [Required(ErrorMessage = "La fecha de Peticion es obligatoria")]
         public DateTime RequestDate { get; set; }
     }
 
-    public class TransportRequestPatchDto
+    public class TransportRequestPatchStatusDto
     {
-        public string? PickupLocation { get; set; }
-        public string? DropoffLocation { get; set; }
-        public DateTime? RequestDate { get; set; }
+        [Required(ErrorMessage = "El Service ID es obligatorio")]
+        public int Id { get; set; }
+
+        [Required(ErrorMessage = "El Status de Reserva es obligatorio")]
+        public ReservationStatus Status { get; set; }
     }
 
 }

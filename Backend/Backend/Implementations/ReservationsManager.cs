@@ -108,11 +108,11 @@ namespace Backend.Implementations
 
                 if (reservation == null)
                 {
-                    _logger.LogWarning("Reservacion QR {qrData} no encontrada.", qrData);
+                    _logger.LogWarning("Reservacion con QR {qrData} no encontrada.", qrData);
                     return GlobalResponse<Reservation>.Fault("Reservacion no encontrada", "404", null);
                 }
 
-                _logger.LogInformation("Reservacion QR {qrData} obtenida correctamente.", qrData);
+                _logger.LogInformation("Reservacion con QR {qrData} obtenida correctamente.", qrData);
                 return GlobalResponse<Reservation>.Success(reservation, 1, "Obtención de Reservacion exitosa", "200");
             }
             catch (Exception ex)
@@ -150,7 +150,7 @@ namespace Backend.Implementations
                     return GlobalResponse<Reservation>.Fault($"El usuario con ID {dto.UserId} no existe.", "404", null);
                 }
 
-                var availableBed = await FindAvailableBedId(dto.ShelterId, dto.StartDate, dto.EndDate);
+                var availableBed = await FindAvailableBed(dto.ShelterId, dto.StartDate, dto.EndDate);
 
                 if (availableBed == null)
                 {
@@ -288,7 +288,7 @@ namespace Backend.Implementations
                 );
         }
 
-        private async Task<Bed?> FindAvailableBedId(int shelterId, DateTime startDate, DateTime endDate)
+        private async Task<Bed?> FindAvailableBed(int shelterId, DateTime startDate, DateTime endDate)
         {
             var availableBed = await _context.Beds
                 .Where(b => b.ShelterId == shelterId)

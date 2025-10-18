@@ -30,12 +30,10 @@ launchSettings.json
 !Backend/Backend/Dtos/
 !Backend/Backend/Implementations/
 !Backend/Backend/Program.cs
-!Backend/Backend.Infrastructure/Implementations/
-!Backend/Backend.Infrastructure/Interfaces/
-!Backend/Backend.Infrastructure/Objects/
 !Backend/Backend.Infraestructure/Implementations/
 !Backend/Backend.Infraestructure/Interfaces/
 !Backend/Backend.Infraestructure/Objects/
+!Backend/Backend.Infraestructure/Models/
 
 # Archivos específicos que no se deben versionar
 Backend/Backend.Infrastructure/archivo-temporal.txt
