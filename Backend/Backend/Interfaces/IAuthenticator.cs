@@ -11,11 +11,15 @@ namespace Backend.Interfaces
     {
         Task<GlobalResponse<dynamic>> Login(string email, string password);
         // REGISTRO DE LOS USUARIOS
-        Task<GlobalResponse<dynamic>> RegisterLite(string nombre, string email, string password, string numero);
-        Task<GlobalResponse<dynamic>> RegisterUser(string nombre, string email, string password, string numero, string nivelEconomico, bool verifacion);
-        Task<GlobalResponse<dynamic>> RegisterAdmin(string name, string email, string password, string passwordAdmin);
+        Task<GlobalResponse<dynamic>> RegisterLite(string nombre, string email, string password, string numero, DateTime fechaDeNamicimiento);
+        Task<GlobalResponse<dynamic>> RegisterUser(string email, string numero, string nivelEconomico, bool verificacion);
+        Task<GlobalResponse<dynamic>> RegisterAdmin(string name, string email, string password, string emailAdmin, string passwordAdmin);
         // CHECAR QUE LOS USUARIOS SI ESTEN VERIFICADOS
         Task<GlobalResponse<dynamic>> VerifyUser(int id, bool verificacion);
+        // ELIMINAR USUARIOS
+        Task<GlobalResponse<dynamic>> DeleteUser(int id);
+        //EDITAR USUARIOS
+        Task<GlobalResponse<dynamic>> EditUser(int id, string? nombre, string? password, bool? verificado, string? nivelEconomico);
 
     }
 }

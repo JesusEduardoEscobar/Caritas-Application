@@ -54,7 +54,7 @@ namespace Backend.Controllers
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "400", null));
                 }
-                var response = await _auth.RegisterLite(request.Nombre, request.Password, request.Numero);
+                var response = await _auth.RegisterLite(request.Nombre, request.Email, request.Password, request.Numero, request.FechaDeNacimiento);
                 if (response == null || response.Data == null || !response.Data.Any())
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
@@ -77,7 +77,7 @@ namespace Backend.Controllers
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "400", null));
                 }
-                var response = await _auth.RegisterUser(request.Nombre, request.Email, request.Password, request.Numero, request.NivelEconomico, request.Verificacion.Value);
+                var response = await _auth.RegisterUser(request.Nombre, request.Numero, request.NivelEconomico, request.Verificacion.Value);
                 if (response == null || response.Data == null || !response.Data.Any())
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
@@ -127,6 +127,52 @@ namespace Backend.Controllers
                 if (response == null || response.Data == null || !response.Data.Any())
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Error al verificar usuario", "400", null));
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [HttpDelete("delete-user")]
+        public async Task<IActionResult> DeleteUser([FromBody] DeleteUserRequesst request)
+        {
+            try
+            {
+                if (request.Id <= 0)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("El ID del usuario debe ser mayor que cero", "400", null));
+                }
+                var response = await _auth.DeleteUser(request.Id);
+                if (response == null || response.Data == null || !response.Data.Any())
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Error al eliminar usuario", "400", null));
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+        [HttpPatch("edit-user")]
+        public async Task<IActionResult> EditUser([FromBody] EditUserRequest request)
+        {
+            try
+            {
+                if (request.Id <= 0)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("El ID del usuario debe ser mayor que cero", "400", null));
+                }
+                var response = await _auth.EditUser(request.Id, request.Nombre,  request.Numero, request.NivelEconomico);
+                if (response == null || response.Data == null || !response.Data.Any())
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Error al editar usuario", "400", null));
                 }
                 return Ok(response);
             }

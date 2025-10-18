@@ -24,4 +24,18 @@ namespace Backend.Infraestructure.Models
         public bool Verificacion { get; set; }
     }
 
+    public class DeleteUserRequesst
+    {
+        public int Id { get; set; }
+    }
+    
+    public class EditUserRequest
+    {
+        public int Id { get; set; }
+        public string? Nombre { get; set; }
+        public string? Password { get; set; }
+        public bool? Verificado { get; set; }
+        public string? NivelEconomico { get; set; }
+    }
+
 }
