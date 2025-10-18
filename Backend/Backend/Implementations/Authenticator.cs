@@ -268,7 +268,7 @@ namespace Backend.Implementations
 
 
         // EDITAR USUARIOS
-        public async Task<GlobalResponse<dynamic>> EditUser(int id, string? nombre, string? password, bool? verificado, string? nivelEconomico)
+        public async Task<GlobalResponse<dynamic>> EditUser(int id, string? nombre, string? numero, bool? verificado, string? nivelEconomico)
         {
             try
             {
@@ -278,9 +278,6 @@ namespace Backend.Implementations
 
                 if (!string.IsNullOrWhiteSpace(nombre))
                     usuario.Name = nombre;
-
-                if (!string.IsNullOrWhiteSpace(password))
-                    usuario.Password = BCrypt.Net.BCrypt.HashPassword(password);
 
                 if (verificado.HasValue)
                     usuario.Verified = verificado.Value;
