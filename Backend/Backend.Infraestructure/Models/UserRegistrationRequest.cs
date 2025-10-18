@@ -17,5 +17,6 @@ namespace Backend.Infraestructure.Models
         public bool? Verificacion { get; set; } // opcional
         public string EmailAdmin { get; set; } // solo para registro admin
         public string PasswordAdmin { get; set; } // solo para registro admin
+        public DateTime FechaDeNacimiento { get; set; }
     }
 }

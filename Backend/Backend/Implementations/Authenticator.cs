@@ -246,6 +246,70 @@ namespace Backend.Implementations
             }
         }
 
+        // ELIMINAR USUARIOS
+        public async Task<GlobalResponse<dynamic>> DeleteUser(int id)
+        {
+            try
+            {
+                var usuario = await _context.Users.FindAsync(id);
+                if (usuario == null)
+                    return GlobalResponse<dynamic>.Fault("Usuario no encontrado", "404", null);
+
+                _context.Users.Remove(usuario);
+                await _context.SaveChangesAsync();
+
+                return GlobalResponse<dynamic>.Success(null, 1, "Usuario eliminado exitosamente", "200");
+            }
+            catch (Exception ex)
+            {
+                return GlobalResponse<dynamic>.Fault($"Error al eliminar usuario: {ex.Message}", "-1", null);
+            }
+        }
+
+
+        // EDITAR USUARIOS
+        public async Task<GlobalResponse<dynamic>> EditUser(int id, string? nombre, string? password, bool? verificado, string? nivelEconomico)
+        {
+            try
+            {
+                var usuario = await _context.Users.FindAsync(id);
+                if (usuario == null)
+                    return GlobalResponse<dynamic>.Fault("Usuario no encontrado", "404", null);
+
+                if (!string.IsNullOrWhiteSpace(nombre))
+                    usuario.Name = nombre;
+
+                if (!string.IsNullOrWhiteSpace(password))
+                    usuario.Password = BCrypt.Net.BCrypt.HashPassword(password);
+
+                if (verificado.HasValue)
+                    usuario.Verified = verificado.Value;
+
+                if (!string.IsNullOrWhiteSpace(nivelEconomico) &&
+                    Enum.TryParse<EconomicLevel>(nivelEconomico, true, out var nivel))
+                {
+                    usuario.EconomicLevel = nivel;
+                }
+
+                _context.Users.Update(usuario);
+                await _context.SaveChangesAsync();
+
+                var result = new
+                {
+                    usuario.Id,
+                    usuario.Name,
+                    usuario.Email,
+                    usuario.Verified,
+                    usuario.EconomicLevel
+                };
+
+                return GlobalResponse<dynamic>.Success(result, 1, "Usuario actualizado exitosamente", "200");
+            }
+            catch (Exception ex)
+            {
+                return GlobalResponse<dynamic>.Fault($"Error al editar usuario: {ex.Message}", "-1", null);
+            }
+        }
 
     }
 }
