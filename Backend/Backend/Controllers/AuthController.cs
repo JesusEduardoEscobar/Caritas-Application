@@ -92,7 +92,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("register-admin")]
-        public async Task<IActionResult> RegisterAdmin([FromBody] UserRegistrationRequest request)
+        public async Task<IActionResult> RegisterAdmin([FromBody] AdminRegistrationRequest request)
         {
             try
             {
@@ -169,7 +169,7 @@ namespace Backend.Controllers
                 {
                     return BadRequest(GlobalResponse<string>.Fault("El ID del usuario debe ser mayor que cero", "400", null));
                 }
-                var response = await _auth.EditUser(request.Id, request.Nombre,  request.Numero, request.NivelEconomico);
+                var response = await _auth.EditUser(request.Id, request.Nombre,  request.Numero, request.Verificado, request.NivelEconomico);
                 if (response == null || response.Data == null || !response.Data.Any())
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Error al editar usuario", "400", null));

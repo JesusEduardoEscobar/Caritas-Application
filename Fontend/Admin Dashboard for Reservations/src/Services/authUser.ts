@@ -1,4 +1,4 @@
-import { API_URL } from './authService';
+import { API_URL } from './authLogin';
 import axios from 'axios';
 
 const token = localStorage.getItem('token');
