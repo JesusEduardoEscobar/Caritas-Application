@@ -40,10 +40,10 @@ namespace Backend.Implementations
                 }
 
                 var token = GenerateJwtToken(userEntity);
-
+                 
                 var response = new
                 {
-                    Token = token,
+                    token = token,
                     User = new
                     {
                         userEntity.Id,

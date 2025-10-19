@@ -35,12 +35,12 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4" style={{ background: 'linear-gradient(to bottom right, #e0f7fa, #b2ebf2)' }}>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-indigo-100 rounded-full">
-              <Shield className="h-8 w-8 text-indigo-600" />
+            <div className="p-3 bg-indigo-100 rounded-full" style={{ backgroundColor: '#b2ebf2' }} >
+              <Shield className="h-8 w-8 text-indigo-600" style={{ color: '#06b6d4' }} />
             </div>
           </div>
           <CardTitle className="text-2xl">Panel de Administración</CardTitle>
@@ -101,7 +101,7 @@ export function LoginForm() {
                   </Alert>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isLoading} style={{ backgroundColor: '#06b6d4' }}>
                   {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                 </Button>
               </form>
