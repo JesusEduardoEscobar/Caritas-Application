@@ -5,10 +5,14 @@ export  const API_URL = 'http://localhost:5086/api'; // Ajusta según tu entorno
 
 export const loginUser = async (email: string, password: string) => {
   try {
-    const response = await axios.post(`${API_URL}/Auth/login?email=${email}&password=${password}`);
-
+    const response = await axios.post(`${API_URL}/Auth/login`, {
+      email,
+      password
+    });
+    console.log(response.data);
     if (response.data.code === '200') {
       const { token, user } = response.data.data;
+      console.log(user);
       return { success: true, token, user };
     }
 

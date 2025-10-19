@@ -19,16 +19,16 @@ namespace Backend.Controllers
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<IActionResult> LoginUser(string email, string password)
+        public async Task<IActionResult> LoginUser([FromBody] LoginRequest request)
         {
             try
             {
-                if (email == null || password == null)
+                if (request.Email == null || request.Password == null)
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos pueden estar vacios", "401", null));
                 }
 
-                var response = await _auth.Login(email, password);
+                var response = await _auth.Login(request.Email, request.Password);
 
                 if (response == null || response.Data == null)
                 {
