@@ -1,6 +1,6 @@
 // src/services/authService.ts
 import axios from 'axios';
-import type { EditUserRequest } from '../types/models.ts';
+import type { EditUserRequest, CreateUserRequest } from '../types/models.ts';
 
 export  const API_URL = 'http://localhost:5086/api'; // Ajusta según tu entorno
 
@@ -49,6 +49,51 @@ export const completeUserRegistration = async (
   } catch (error: any) {
     console.error("Error al completar registro:", error.response?.data || error.message);
     throw error;
+  }
+};
+
+// Crear usuario
+export const createUser = async (
+  name: string,
+  email: string,
+  password: string,
+  confirmPassword: string,
+  numero: string,
+  fechaDeNacimiento: string,
+  shelterId: number,
+  nivelEconomico: string,
+  verificacion: boolean
+) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/Auth/create-user`,
+      {
+        name,
+        email,
+        password,
+        confirmPassword,
+        numero,
+        fechaDeNacimiento,
+        shelterId,
+        nivelEconomico,
+        verificacion,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    if (response.data.ok) {
+      return response.data;
+    } else {
+      throw new Error(response.data.message || 'Error al crear usuario');
+    }
+  } catch (error: any) {
+    console.error('Error al crear usuario:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al crear el usuario');
   }
 };
 

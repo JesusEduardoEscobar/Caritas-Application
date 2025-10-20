@@ -13,6 +13,7 @@ namespace Backend.Interfaces
         // REGISTRO DE LOS USUARIOS
         Task<GlobalResponse<dynamic>> RegisterLite(string nombre, string email, string password, string numero, DateTime fechaDeNamicimiento);
         Task<GlobalResponse<dynamic>> RegisterUser(string email, string numero, int shelterId, string nivelEconomico, bool verificacion);
+        Task<GlobalResponse<dynamic>> CreateUser(string name, string email, string password, string confirmPassword, string numero, DateTime fechaDeNacimiento, int shelterId, string? nivelEconomico, bool? verificacion);
         Task<GlobalResponse<dynamic>> RegisterAdmin(string name, string email, string password, string emailAdmin, string passwordAdmin);
         // CHECAR QUE LOS USUARIOS SI ESTEN VERIFICADOS
         Task<GlobalResponse<dynamic>> VerifyUser(int id, bool verificacion);
