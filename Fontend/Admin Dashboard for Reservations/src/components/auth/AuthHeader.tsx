@@ -16,19 +16,11 @@ export function AuthHeader() {
     .toUpperCase()
     .slice(0, 2);
 
-  const roleLabel = typeof admin.role === 'string'
-  ? admin.role.replace('_', ' ')
-  : admin.role === 1
-    ? 'admin'
-    : admin.role === 2
-    ? 'usuario'
-    : 'desconocido';
-
   return (
     <div className="flex items-center space-x-4">
       <div className="hidden md:block text-right">
         <p className="text-sm">{admin.name ?? `Admin${admin.id}`}</p>
-        <p className="text-xs text-muted-foreground capitalize">{roleLabel}</p>
+        <p className="text-xs text-muted-foreground capitalize">{admin.role }</p>
       </div>
       
       <DropdownMenu>
