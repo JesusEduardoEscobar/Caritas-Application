@@ -101,7 +101,7 @@ namespace Backend.Implementations
                     return GlobalResponse<dynamic>.Fault("La fecha de nacimiento no puede ser futura", "400", null);
                 if (!new EmailAddressAttribute().IsValid(email))
                     return GlobalResponse<dynamic>.Fault("Correo inválido", "400", null);
-                if (!Regex.IsMatch(numero, @"^\d{10}$"))
+                if (!Regex.IsMatch(numero, @"^(\+52)?\d{10}$"))
                     return GlobalResponse<dynamic>.Fault("El número de teléfono debe tener 10 dígitos", "400", null);
 
                 var nuevoUsuario = new User
@@ -136,30 +136,34 @@ namespace Backend.Implementations
         }
 
         // REGISTRARLOS USUARIOS POR PARTE DE LOS ADMINISTRADORES
-        public async Task<GlobalResponse<dynamic>> RegisterUser(string email, string numero, string nivelEconomico, bool verificacion)
+        public async Task<GlobalResponse<dynamic>> RegisterUser(string email, string numero, int shelterId, string nivelEconomico, bool verificacion)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(email))
                     return GlobalResponse<dynamic>.Fault("El correo es obligatorio", "400", null);
 
-                if (!int.TryParse(numero, out int shelterId))
-                    return GlobalResponse<dynamic>.Fault("Número inválido", "400", null);
-
                 var usuario = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
                 if (usuario == null)
                     return GlobalResponse<dynamic>.Fault("Usuario no encontrado con ese correo", "404", null);
 
                 // Solo actualiza si están vacíos
-                if (usuario.ShelterId == 0) usuario.ShelterId = shelterId;
-
-                if (Enum.TryParse<EconomicLevel>(nivelEconomico, true, out var nivel))
-                    usuario.EconomicLevel = nivel;
+                if (usuario.ShelterId == 0 || usuario.ShelterId == null) usuario.ShelterId = shelterId;
 
                 usuario.Verified = verificacion;
+                usuario.ShelterId = usuario.ShelterId == 0 ? shelterId : usuario.ShelterId;
+                if (Enum.TryParse<EconomicLevel>(nivelEconomico, true, out var nivel))
+                    usuario.EconomicLevel = nivel;
+                if (usuario.DateOfBirth.HasValue && usuario.DateOfBirth.Value.Kind == DateTimeKind.Unspecified)
+                {
+                    usuario.DateOfBirth = DateTime.SpecifyKind(usuario.DateOfBirth.Value, DateTimeKind.Utc);
+                }
 
-                _context.Users.Update(usuario);
+
+
+                _context.Entry(usuario).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+
 
                 var result = new
                 {
@@ -265,20 +269,24 @@ namespace Backend.Implementations
                 if (usuario == null)
                     return GlobalResponse<dynamic>.Fault("Usuario no encontrado", "404", null);
 
-                _context.Users.Remove(usuario);
+                _context.Entry(usuario).State = EntityState.Deleted;
                 await _context.SaveChangesAsync();
 
                 return GlobalResponse<dynamic>.Success(null, 1, "Usuario eliminado exitosamente", "200");
             }
             catch (Exception ex)
             {
-                return GlobalResponse<dynamic>.Fault($"Error al eliminar usuario: {ex.Message}", "-1", null);
+                return GlobalResponse<dynamic>.Fault(
+                        $"Error al eliminar usuario: {ex.Message} | StackTrace: {ex.StackTrace}",
+                        "-1",
+                        null
+                    );
             }
         }
 
 
         // EDITAR USUARIOS
-        public async Task<GlobalResponse<dynamic>> EditUser(int id, string? nombre, string? numero, bool? verificado, string? nivelEconomico)
+        public async Task<GlobalResponse<dynamic>> EditUser(int id, string? nombre, string? numero, int? shelterId, bool? verificado, string? nivelEconomico)
         {
             try
             {
@@ -289,16 +297,46 @@ namespace Backend.Implementations
                 if (!string.IsNullOrWhiteSpace(nombre))
                     usuario.Name = nombre;
 
+                if (!string.IsNullOrWhiteSpace(numero))
+                    usuario.Phone = numero;
+
                 if (verificado.HasValue)
                     usuario.Verified = verificado.Value;
 
-                if (!string.IsNullOrWhiteSpace(nivelEconomico) &&
-                    Enum.TryParse<EconomicLevel>(nivelEconomico, true, out var nivel))
+                if (!string.IsNullOrWhiteSpace(nivelEconomico))
                 {
-                    usuario.EconomicLevel = nivel;
+                    nivelEconomico = nivelEconomico.ToLower() switch
+                    {
+                        "bajo" => "Low",
+                        "medio" => "Medium",
+                        "alto" => "High",
+                        _ => nivelEconomico
+                    };
+
+                    if (Enum.TryParse<EconomicLevel>(nivelEconomico, true, out var nivel))
+                    {
+                        usuario.EconomicLevel = nivel;
+                    }
+                    else
+                    {
+                        return GlobalResponse<dynamic>.Fault("Nivel económico inválido", "400", null);
+                    }
                 }
 
-                _context.Users.Update(usuario);
+
+                if (shelterId.HasValue && (usuario.ShelterId == 0 || usuario.ShelterId == null))
+                    usuario.ShelterId = shelterId;
+
+                // ⬇️ ESTO ES CRÍTICO: Marca como modificado solo los campos que cambiaste
+                _context.Entry(usuario).State = EntityState.Modified;
+
+                // ⬇️ EVITA QUE EF INTENTE ACTUALIZAR DateOfBirth
+                _context.Entry(usuario).Property(u => u.DateOfBirth).IsModified = false;
+
+                // ⬇️ TAMBIÉN EVITA ACTUALIZAR CreatedAt si existe
+                if (_context.Entry(usuario).Property("CreatedAt") != null)
+                    _context.Entry(usuario).Property("CreatedAt").IsModified = false;
+
                 await _context.SaveChangesAsync();
 
                 var result = new
@@ -306,6 +344,7 @@ namespace Backend.Implementations
                     usuario.Id,
                     usuario.Name,
                     usuario.Email,
+                    usuario.ShelterId,
                     usuario.Verified,
                     usuario.EconomicLevel
                 };
@@ -319,4 +358,5 @@ namespace Backend.Implementations
         }
 
     }
+
 }

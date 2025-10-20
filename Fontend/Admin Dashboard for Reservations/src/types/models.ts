@@ -15,14 +15,13 @@
 export interface User {
   id: number;
   name: string;
-  bithday: number;
+  birthdate: number;
   email: string;
   password?: string; // No se devuelve en las respuestas GET
   phone: string | null;
   role: 'user' | 'admin';
   shelter_id: number;
-  economic_level: string;
-  created_at: string;
+  economicLevel: string;
   verified: boolean;
 }
 
@@ -49,6 +48,15 @@ export interface UserUpdateDTO {
   shelter_id?: number;
   economic_level?: string;
   verified?: boolean;
+}
+
+export interface EditUserRequest {
+  id: number;
+  nombre?: string;
+  numero?: string;
+  shelterId?: number;  // ⬅️ AGREGAR ESTA PROPIEDAD
+  verificado?: boolean;
+  nivelEconomico?: string;
 }
 
 // ============================================
@@ -86,29 +94,29 @@ export interface Shelter {
   phone: string;
   capacity: number;
   description: string;
-  created_at: string;
+  createdAt: string;
   occupancy: number;
 }
 
-export interface ShelterCreateDTO {
+export interface ShelterCreateDto {
   name: string;
   address: string;
   latitude: number;
   longitude: number;
   phone: string;
   capacity: number;
-  description: string;
+  description?: string;
 }
 
-export interface ShelterUpdateDTO {
-  name?: string;
-  address?: string;
-  latitude?: number;
-  longitude?: number;
-  phone?: string;
-  capacity?: number;
+export interface ShelterUpdateDto {
+  id: number;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  phone: string;
+  capacity: number;
   description?: string;
-  occupancy?: number;
 }
 
 // ============================================
@@ -221,4 +229,28 @@ export interface ResourceFilters {
   shelterId?: number;
   type?: ResourceType;
   availableOnly?: boolean;
+}
+
+
+// ============================================
+// SERVICIOS
+// ============================================
+export interface Service {
+  id: number;
+  name: string;
+  description: string;
+  iconKey: string;
+}
+
+export interface ServiceCreateDto {
+  name: string;
+  description: string;
+  iconKey: string;
+}
+
+export interface ServiceUpdateDto {
+  id: number;
+  name: string;
+  description: string;
+  iconKey: string;
 }

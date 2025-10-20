@@ -9,11 +9,12 @@ namespace Backend.Infraestructure.Models
 {
     public class UserRegistrationRequest
     {
-        public string Nombre { get; set; }
+        public string? Nombre { get; set; }
         [EmailAddress]
         public string Email { get; set; } // opcional para registro lite
-        public string Password { get; set; }
+        public string? Password { get; set; }
         public string Numero { get; set; } // puede ser teléfono o shelter
+        public int ShelterId { get; set; } // opcional
         public string? NivelEconomico { get; set; } // opcional
         public bool? AntecedentesNoPenales { get; set; } // opcional
         public bool? Verificacion { get; set; } // opcional

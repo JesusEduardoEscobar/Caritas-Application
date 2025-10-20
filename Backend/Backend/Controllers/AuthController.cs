@@ -1,4 +1,4 @@
-using Backend.Infraestructure.Implementations;
+﻿using Backend.Infraestructure.Implementations;
 using Backend.Infraestructure.Models;
 using Backend.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -32,7 +32,7 @@ namespace Backend.Controllers
 
                 if (response == null || response.Data == null)
                 {
-                    return BadRequest(GlobalResponse<string>.Fault(response?.Message ?? "Credenciales inv�lidas", "401", null));
+                    return BadRequest(GlobalResponse<string>.Fault(response?.Message ?? "Credenciales inválidas", "401", null));
                 }
 
                 return Ok(response);
@@ -52,7 +52,7 @@ namespace Backend.Controllers
             {
                 if (string.IsNullOrWhiteSpace(request.Nombre) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.Numero))
                 {
-                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vac�o", "400", null));
+                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "400", null));
                 }
                 var response = await _auth.RegisterLite(request.Nombre, request.Email, request.Password, request.Numero, request.FechaDeNacimiento);
                 if (response == null || response.Data == null)
@@ -73,12 +73,18 @@ namespace Backend.Controllers
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(request.Nombre) || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.Numero) || string.IsNullOrWhiteSpace(request.NivelEconomico) || request.Verificacion == null)
+                if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Numero) || string.IsNullOrWhiteSpace(request.NivelEconomico) || request.Verificacion == null)
                 {
-                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vac�o", "400", null));
+                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "400", null));
                 }
-                var response = await _auth.RegisterUser(request.Nombre, request.Numero, request.NivelEconomico, request.Verificacion.Value);
-                if (response == null || response.Data == null || !response.Data.Any())
+                var response = await _auth.RegisterUser(
+                    request.Email,
+                    request.Numero,
+                    request.ShelterId,
+                    request.NivelEconomico,
+                    request.Verificacion ?? false
+                );
+                if (!response.Ok)
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
                 }
@@ -98,10 +104,10 @@ namespace Backend.Controllers
             {
                 if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.EmailAdmin) || string.IsNullOrWhiteSpace(request.PasswordAdmin))
                 {
-                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vac�o", "400", null));
+                    return BadRequest(GlobalResponse<string>.Fault("Ninguno de los campos puede estar vacío", "400", null));
                 }
                 var response = await _auth.RegisterAdmin(request.Nombre, request.Email, request.Password, request.EmailAdmin, request.PasswordAdmin);
-                if (response == null || response.Data == null || !response.Data.Any())
+                if (response == null || !response.Ok)
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
                 }
@@ -147,7 +153,7 @@ namespace Backend.Controllers
                     return BadRequest(GlobalResponse<string>.Fault("El ID del usuario debe ser mayor que cero", "400", null));
                 }
                 var response = await _auth.DeleteUser(request.Id);
-                if (response == null || response.Data == null || !response.Data.Any())
+                if (response == null || !response.Ok)
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Error al eliminar usuario", "400", null));
                 }
@@ -169,16 +175,25 @@ namespace Backend.Controllers
                 {
                     return BadRequest(GlobalResponse<string>.Fault("El ID del usuario debe ser mayor que cero", "400", null));
                 }
-                var response = await _auth.EditUser(request.Id, request.Nombre,  request.Numero, request.Verificado, request.NivelEconomico);
-                if (response == null || response.Data == null || !response.Data.Any())
+
+                var response = await _auth.EditUser(
+                    request.Id,
+                    request.Nombre,
+                    request.Numero,
+                    request.ShelterId,  // ⬅️ AGREGAR ESTE PARÁMETRO
+                    request.Verificado,
+                    request.NivelEconomico
+                );
+
+                if (response == null || !response.Ok)
                 {
-                    return BadRequest(GlobalResponse<string>.Fault("Error al editar usuario", "400", null));
+                    return BadRequest(GlobalResponse<string>.Fault(response?.Message ?? "Error al editar usuario", "400", null));
                 }
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                var errorResponse = GlobalResponse<string>.Fault($"Error interno del servidor: {ex.Message}", "-1", null);
                 return StatusCode(500, errorResponse);
             }
         }
