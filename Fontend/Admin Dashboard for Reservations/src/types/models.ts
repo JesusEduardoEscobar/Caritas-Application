@@ -54,9 +54,21 @@ export interface EditUserRequest {
   id: number;
   nombre?: string;
   numero?: string;
-  shelterId?: number;  // ⬅️ AGREGAR ESTA PROPIEDAD
+  shelterId?: number;
   verificado?: boolean;
   nivelEconomico?: string;
+}
+
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  numero: string;
+  fechaDeNacimiento: string; // formato: "YYYY-MM-DD"
+  shelterId: number;
+  nivelEconomico: string;
+  verificacion: boolean;
 }
 
 // ============================================

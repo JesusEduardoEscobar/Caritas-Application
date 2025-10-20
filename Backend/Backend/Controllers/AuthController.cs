@@ -97,6 +97,45 @@ namespace Backend.Controllers
             }
         }
 
+        [HttpPost("register")]
+        public async Task<IActionResult> CreateUser([FromBody] UserRegistrationRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Nombre) ||
+                    string.IsNullOrWhiteSpace(request.Password) ||
+                    string.IsNullOrWhiteSpace(request.Numero))
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Nombre, contraseña y número son obligatorios", "400", null));
+                }
+
+                var response = await _auth.CreateUser(
+                    name: request.Nombre!,
+                    email: request.Email,
+                    password: request.Password!,
+                    confirmPassword: request.Password!, // Asumes confirmación implícita
+                    numero: request.Numero,
+                    fechaDeNacimiento: request.FechaDeNacimiento,
+                    shelterId: request.ShelterId,
+                    nivelEconomico: request.NivelEconomico,
+                    verificacion: request.Verificacion
+                );
+
+                if (response == null || response.Data == null)
+                {
+                    return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = GlobalResponse<string>.Fault("Error interno del servidor", "-1", null);
+                return StatusCode(500, errorResponse);
+            }
+        }
+
+
         [HttpPost("register-admin")]
         public async Task<IActionResult> RegisterAdmin([FromBody] AdminRegistrationRequest request)
         {

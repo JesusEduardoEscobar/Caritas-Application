@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { Users, Search, Edit, Trash2, Mail, Phone, Shield, User, Building2 } from 'lucide-react';
 import { useAuth } from './auth/AuthProvider';
 import { getUsers, getUsersByShelter, filterUsers } from '../Services/authUser';
-import { deleteUser, completeUserRegistration, createAdmin, editUser } from '../Services/authLogin';
+import { deleteUser, completeUserRegistration, createAdmin, editUser, createUser } from '../Services/authLogin';
 import { getAllShelters } from '../Services/authShelter';
 import type { User as UserType, Shelter } from '../types/models';
 import { toast } from 'sonner';
@@ -47,6 +47,19 @@ export function UserManagement() {
   const [adminPassword, setAdminPassword] = useState("");
   const [adminConfirm, setAdminConfirm] = useState("");
   const [adminPasswordAdmin, setAdminPasswordAdmin] = useState("");
+
+  // Estados para creaer usuario
+  const [showRegisterUserForm, setShowRegisterUserForm] = useState(false);
+  const [registerName, setRegisterName] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [registerConfirmPassword, setRegisterConfirmPassword] = useState("");
+  const [registerFechaDeNacimiento, setRegisterFechaDeNacimiento] = useState("");
+  const [registerShelterId, setRegisterShelterId] = useState("");
+  const [registerNumero, setRegisterNumero] = useState("");
+  const [registerNivel, setRegisterNivel] = useState("Medium");
+  const [registerVerificado, setRegisterVerificado] = useState(false);
+
 
   // Cargar shelters al montar el componente
   useEffect(() => {
@@ -242,6 +255,36 @@ export function UserManagement() {
     }
   };
 
+  const handleCreateUser = async () => {
+    if (!registerEmail.trim()) {
+      toast.error("El correo es obligatorio");
+      return;
+    }
+    if (registerPassword.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+    if (registerPassword !== registerConfirmPassword) {
+      toast.error("Las contraseñas no coinciden");
+      return;
+    }
+    try {
+      await createUser(registerName, registerEmail, registerPassword, registerConfirmPassword, registerNumero, registerFechaDeNacimiento, parseInt(registerShelterId), registerNivel, registerVerificado);
+      toast.success("Usuario creado correctamente");
+      setRegisterEmail("");
+      setRegisterPassword("");
+      setRegisterConfirmPassword("");
+      setRegisterNumero("");
+      setRegisterNivel("Medio");
+      setRegisterVerificado(false);
+      setShowRegisterUserForm(false);
+      await loadUsers();
+    } catch (err: any) {
+      console.error("Error al crear usuario:", err);
+      toast.error(err.message || "Error al crear el usuario");
+    }
+  }
+
   // Filtrar usuarios por búsqueda
   const filteredUsers = filterUsers(allUsers, { search: searchTerm });
 
@@ -390,6 +433,9 @@ export function UserManagement() {
         </Button>
         <Button onClick={() => setShowAdminForm(!showAdminForm)}>
           Registrar Admin
+        </Button>
+        <Button onClick={() => setShowRegisterUserForm(!showRegisterUserForm)}>
+          Crear Usuario
         </Button>
       </div>
 
@@ -690,6 +736,139 @@ export function UserManagement() {
                   }}
                 >
                   Cancelar
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Formulario crear usuario */}
+      {showRegisterUserForm && (
+        <Card className="border-2">
+          <CardHeader>
+            <CardTitle>Registrar Nuevo Usuario</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <Label>Nombre Completo</Label>
+                <Input
+                  placeholder="Nombre del usuario"
+                  value={registerName}
+                  onChange={(e) => setRegisterName(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Correo Electrónico</Label>
+                <Input
+                  placeholder="Correo del usuario"
+                  type="email"
+                  value={registerEmail}
+                  onChange={(e) => setRegisterEmail(e.target.value)}
+                  className="mt-1"
+                /> 
+              </div>
+              <div>
+                <Label>Contraseña</Label>
+                <Input
+                  placeholder="Contraseña del usuario"
+                  type="password"
+                  value={registerPassword}
+                  onChange={(e) => setRegisterPassword(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Confirmar Contraseña</Label>
+                <Input
+                  placeholder="Confirmar contraseña"
+                  type="password"
+                  value={registerConfirmPassword}
+                  onChange={(e) => setRegisterConfirmPassword(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Número de Teléfono</Label>
+                <Input
+                  placeholder="Número de teléfono (puede incluir +52)"
+                  value={registerNumero}
+                  onChange={(e) => setRegisterNumero(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Fecha de Nacimiento</Label>
+                <Input
+                  placeholder="AAAA-MM-DD"
+                  value={registerFechaDeNacimiento}
+                  onChange={(e) => setRegisterFechaDeNacimiento(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Refugio / Shelter</Label>
+                <Select value={registerShelterId} onValueChange={setRegisterShelterId}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Seleccione un refugio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {shelters.map(shelter => (
+                      <SelectItem key={shelter.id} value={shelter.id.toString()}>
+                        {shelter.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Nivel Económico</Label>
+                <Select value={registerNivel} onValueChange={setRegisterNivel}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Bajo">Bajo</SelectItem>
+                    <SelectItem value="Medio">Medio</SelectItem>
+                    <SelectItem value="Alto">Alto</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="registerVerificado"
+                  checked={registerVerificado}
+                  onChange={(e) => setRegisterVerificado(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="registerVerificado" className="cursor-pointer">
+                  Usuario Verificado
+                </Label>
+              </div>
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={handleCreateUser}
+                  disabled={!registerEmail || !registerPassword || !registerConfirmPassword || !registerShelterId}
+                >
+                  Crear Usuario
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowRegisterUserForm(false);
+                    setRegisterName("");
+                    setRegisterEmail("");
+                    setRegisterPassword("");
+                    setRegisterConfirmPassword("");
+                    setRegisterNumero("");
+                    setRegisterNivel("Medio");
+                    setRegisterVerificado(false);
+                  }}
+                >                  
+                Cancelar
                 </Button>
               </div>
             </div>
