@@ -97,8 +97,8 @@ namespace Backend.Controllers
             }
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> CreateUser([FromBody] UserRegistrationRequest request)
+        [HttpPost("create-user")]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
             try
             {
@@ -121,7 +121,7 @@ namespace Backend.Controllers
                     verificacion: request.Verificacion
                 );
 
-                if (response == null || response.Data == null)
+                if (response == null || !response.Ok)
                 {
                     return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
                 }

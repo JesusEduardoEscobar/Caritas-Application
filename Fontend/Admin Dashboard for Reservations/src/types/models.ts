@@ -15,12 +15,13 @@
 export interface User {
   id: number;
   name: string;
-  birthdate: number;
+  dateOfBirth: number;
   email: string;
   password?: string; // No se devuelve en las respuestas GET
   phone: string | null;
   role: 'user' | 'admin';
   shelter_id: number;
+  shelterId?: number | null;
   economicLevel: string;
   verified: boolean;
 }

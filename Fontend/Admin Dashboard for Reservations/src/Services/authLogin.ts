@@ -4,6 +4,19 @@ import type { EditUserRequest, CreateUserRequest } from '../types/models.ts';
 
 export  const API_URL = 'http://localhost:5086/api'; // Ajusta según tu entorno
 
+export const formatDateForBackend = (dateString: string): string => {
+  if (!dateString) return '';
+  
+  // Si ya viene en formato ISO completo, lo devuelve
+  if (dateString.includes('T')) {
+    return dateString;
+  }
+  
+  // Si es solo fecha (YYYY-MM-DD), agregar hora medianoche UTC
+  const date = new Date(dateString + 'T00:00:00Z');
+  return date.toISOString();
+};
+
 export const loginUser = async (email: string, password: string) => {
   try {
     const response = await axios.post(`${API_URL}/Auth/login`, {
@@ -18,7 +31,7 @@ export const loginUser = async (email: string, password: string) => {
       return { success: true, token, user };
     }
 
-    return { success: false, error: response.data.message };
+    return { success: false, error: response.data.message || "Credenciales inválidas" };
   } catch (error: any) {
     return { success: false, error: 'Error de conexión con el servidor' };
   }
@@ -65,6 +78,18 @@ export const createUser = async (
   verificacion: boolean
 ) => {
   try {
+    const fechaFormateada = formatDateForBackend(fechaDeNacimiento);
+    console.log("Payload enviado:", {
+      name,
+      email,
+      password,
+      confirmPassword,
+      numero,
+      fechaDeNacimiento: fechaFormateada,
+      shelterId,
+      nivelEconomico,
+      verificacion,
+    });
     const response = await axios.post(
       `${API_URL}/Auth/create-user`,
       {
@@ -73,7 +98,7 @@ export const createUser = async (
         password,
         confirmPassword,
         numero,
-        fechaDeNacimiento,
+        fechaDeNacimiento: fechaFormateada,
         shelterId,
         nivelEconomico,
         verificacion,
@@ -92,7 +117,7 @@ export const createUser = async (
       throw new Error(response.data.message || 'Error al crear usuario');
     }
   } catch (error: any) {
-    console.error('Error al crear usuario:', error.response?.data || error.message);
+    console.error('Error al crear usuario front error principal:', error.response?.data || error.message);
     throw new Error(error.response?.data?.message || 'Error al crear el usuario');
   }
 };
