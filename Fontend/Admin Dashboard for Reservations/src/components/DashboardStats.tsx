@@ -2,18 +2,30 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
-import { Users, Bed, Calendar, CheckCircle, AlertCircle, Shield, UserCheck } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { 
+  Users, Bed, Calendar, CheckCircle, AlertCircle, Shield, UserCheck, 
+  Home, Loader2, MapPin, Phone, Package, Plus
+} from 'lucide-react';
 import { getUsers } from '../Services/authUser';
+import { getBeds } from '../Services/authBeds';
+import { getAllShelters, createShelter, validateShelterData } from '../Services/authShelter';
+import { getAllServices, createService, validateServiceData, availableIcons } from '../Services/authServices';
 import { toast } from 'sonner';
+import * as LucideIcons from 'lucide-react';
+import { Textarea } from "./ui/textarea";
 
-// Mock data para servicios
-const bedsByService = [
-  { service: 'Hospedaje', total: 50, inUse: 31, reserved: 8, available: 11 },
-  { service: 'Comida', total: 50, inUse: 38, reserved: 5, available: 7 },
-  { service: 'Regaderas', total: 10, inUse: 6, reserved: 2, available: 2 },
-  { service: 'Lavandería', total: 8, inUse: 3, reserved: 2, available: 3 },
-  { service: 'Enfermería', total: 5, inUse: 2, reserved: 1, available: 2 }
-];
+interface ServiceStats {
+  service: string;
+  serviceId: number;
+  total: number;
+  occupied: number;
+  available: number;
+}
 
 export function DashboardStats() {
   const [totalUsers, setTotalUsers] = useState(0);
@@ -22,16 +34,45 @@ export function DashboardStats() {
   const [verifiedUsers, setVerifiedUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Estados para beds, shelters y services
+  const [beds, setBeds] = useState<any[]>([]);
+  const [shelters, setShelters] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [shelterBedStats, setShelterBedStats] = useState<Record<number, any>>({});
+  const [serviceStats, setServiceStats] = useState<ServiceStats[]>([]);
+
+  // Estados para diálogos
+  const [isCreateShelterOpen, setIsCreateShelterOpen] = useState(false);
+  const [isCreateServiceOpen, setIsCreateServiceOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Estados para formularios
+  const [newShelter, setNewShelter] = useState({
+    name: '',
+    address: '',
+    latitude: '',
+    longitude: '',
+    phone: '',
+    capacity: ''
+  });
+
+  const [newService, setNewService] = useState({
+    name: '',
+    description: '',
+    iconKey: ''
+  });
+
   // Mock data para otros stats
   const stats = {
     activeReservations: 23,
-    totalBeds: 50,
-    occupiedBeds: 31,
+    totalBeds: 0,
+    occupiedBeds: 0,
     pendingConfirmations: 5
   };
 
   useEffect(() => {
     loadUserStats();
+    loadSheltersAndServices();
   }, []);
 
   const loadUserStats = async () => {
@@ -49,7 +90,169 @@ export function DashboardStats() {
     }
   };
 
-  const occupancyRate = Math.round((stats.occupiedBeds / stats.totalBeds) * 100);
+  const loadSheltersAndServices = async () => {
+    try {
+      const [bedsData, sheltersData, servicesData] = await Promise.all([
+        getBeds(),
+        getAllShelters(),
+        getAllServices()
+      ]);
+
+      setBeds(bedsData);
+      setShelters(sheltersData);
+      setServices(servicesData);
+
+      // Calcular estadísticas de camas por shelter
+      const statsByShelter: Record<number, any> = {};
+      for (const shelter of sheltersData) {
+        const shelterBeds = bedsData.filter((bed: any) => bed.shelterId === shelter.id);
+        const available = shelterBeds.filter((bed: any) => bed.isAvailable).length;
+        const occupied = shelterBeds.length - available;
+        const rate = shelterBeds.length > 0 ? Math.round((occupied / shelterBeds.length) * 100) : 0;
+
+        statsByShelter[shelter.id] = {
+          total: shelterBeds.length,
+          available,
+          occupied,
+          occupancyRate: rate
+        };
+      }
+      setShelterBedStats(statsByShelter);
+
+      // Calcular estadísticas por servicio basado en camas reales
+      // Agrupar camas por shelter y contar las que están ocupadas
+      const statsPerService: ServiceStats[] = servicesData.map((service: any) => {
+        // Por ahora, asumimos que todos los shelters ofrecen todos los servicios
+        // Si tienes una relación específica entre servicios y shelters, ajusta esto
+        const totalBeds = bedsData.length;
+        const availableBeds = bedsData.filter((bed: any) => bed.isAvailable).length;
+        const occupiedBeds = totalBeds - availableBeds;
+
+        return {
+          service: service.name,
+          serviceId: service.id,
+          total: totalBeds,
+          occupied: occupiedBeds,
+          available: availableBeds
+        };
+      });
+
+      setServiceStats(statsPerService);
+
+      // Actualizar stats globales
+      stats.totalBeds = bedsData.length;
+      stats.occupiedBeds = bedsData.filter((bed: any) => !bed.isAvailable).length;
+
+    } catch (error) {
+      console.error('Error al cargar refugios y servicios:', error);
+      toast.error('Error al cargar datos');
+    }
+  };
+
+  const getIconComponent = (iconKey: string) => {
+    const iconName = iconKey
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('');
+    
+    const Icon = (LucideIcons as any)[iconName];
+    return Icon || Package;
+  };
+
+  const handleCreateShelter = async () => {
+    // Validar datos
+    const errors = validateShelterData({
+      name: newShelter.name,
+      address: newShelter.address,
+      latitude: parseFloat(newShelter.latitude),
+      longitude: parseFloat(newShelter.longitude),
+      phone: newShelter.phone,
+      capacity: parseInt(newShelter.capacity)
+    });
+
+    if (errors.length > 0) {
+      errors.forEach(error => toast.error(error));
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      await createShelter({
+        name: newShelter.name,
+        address: newShelter.address,
+        latitude: parseFloat(newShelter.latitude),
+        longitude: parseFloat(newShelter.longitude),
+        phone: newShelter.phone,
+        capacity: parseInt(newShelter.capacity)
+      });
+
+      toast.success('Refugio creado correctamente');
+      setIsCreateShelterOpen(false);
+      setNewShelter({
+        name: '',
+        address: '',
+        latitude: '',
+        longitude: '',
+        phone: '',
+        capacity: ''
+      });
+      
+      // Recargar datos
+      loadSheltersAndServices();
+    } catch (error: any) {
+      toast.error(error.message || 'Error al crear el refugio');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleCreateService = async () => {
+    // Validar datos
+    const errors = validateServiceData({
+      name: newService.name,
+      description: newService.description,
+      iconKey: newService.iconKey
+    });
+
+    if (errors.length > 0) {
+      errors.forEach(error => toast.error(error));
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      await createService({
+        name: newService.name,
+        description: newService.description,
+        iconKey: newService.iconKey
+      });
+
+      toast.success('Servicio creado correctamente');
+      setIsCreateServiceOpen(false);
+      setNewService({
+        name: '',
+        description: '',
+        iconKey: ''
+      });
+      
+      // Recargar datos
+      loadSheltersAndServices();
+    } catch (error: any) {
+      toast.error(error.message || 'Error al crear el servicio');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const occupancyRate = stats.totalBeds > 0 ? Math.round((stats.occupiedBeds / stats.totalBeds) * 100) : 0;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-7">
@@ -61,16 +264,16 @@ export function DashboardStats() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl" style={{ color: '#06b6d4' }}>
-              {isLoading ? '...' : totalUsers}
+              {totalUsers}
             </div>
             <div className="flex items-center gap-2 mt-2">
               <Badge variant="outline" className="px-2 py-1">
                 <Shield className="h-3 w-3 mr-1" />
-                {isLoading ? '...' : totalAdmins} Admins
+                {totalAdmins} Admins
               </Badge>
               <Badge variant="outline" className="px-2 py-1">
                 <UserCheck className="h-3 w-3 mr-1" />
-                {isLoading ? '...' : totalRegularUsers} Usuarios
+                {totalRegularUsers} Usuarios
               </Badge>
             </div>
           </CardContent>
@@ -83,10 +286,10 @@ export function DashboardStats() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl" style={{ color: '#06b6d4' }}>
-              {isLoading ? '...' : verifiedUsers}
+              {verifiedUsers}
             </div>
             <p className="text-muted-foreground mt-1">
-              {isLoading ? '...' : `${totalUsers - verifiedUsers} sin verificar`}
+              {totalUsers - verifiedUsers} sin verificar
             </p>
           </CardContent>
         </Card>
@@ -119,6 +322,335 @@ export function DashboardStats() {
         </Card>
       </div>
 
+      {/* Cards de Refugios */}
+      <Card className="border-2">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Home className="h-5 w-5" style={{ color: '#06b6d4' }} />
+              Refugios Disponibles
+            </CardTitle>
+            <Dialog open={isCreateShelterOpen} onOpenChange={setIsCreateShelterOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar Refugio
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Crear Nuevo Refugio</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Nombre del Refugio *</Label>
+                    <Input
+                      placeholder="Ej: Refugio San Juan"
+                      value={newShelter.name}
+                      onChange={(e) => setNewShelter({...newShelter, name: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Dirección *</Label>
+                    <Textarea
+                      placeholder="Dirección completa del refugio"
+                      value={newShelter.address}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                          setNewShelter({ ...newShelter, address: e.target.value })
+                        }
+                        rows={2}
+                      />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Latitud *</Label>
+                      <Input
+                        type="number"
+                        step="0.000001"
+                        placeholder="Ej: 25.686613"
+                        value={newShelter.latitude}
+                        onChange={(e) => setNewShelter({...newShelter, latitude: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Longitud *</Label>
+                      <Input
+                        type="number"
+                        step="0.000001"
+                        placeholder="Ej: -100.316116"
+                        value={newShelter.longitude}
+                        onChange={(e) => setNewShelter({...newShelter, longitude: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Teléfono *</Label>
+                    <Input
+                      placeholder="Ej: 81-1234-5678"
+                      value={newShelter.phone}
+                      onChange={(e) => setNewShelter({...newShelter, phone: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Capacidad (personas) *</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="Ej: 50"
+                      value={newShelter.capacity}
+                      onChange={(e) => setNewShelter({...newShelter, capacity: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      className="flex-1" 
+                      onClick={handleCreateShelter}
+                      disabled={isCreating}
+                    >
+                      {isCreating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Creando...
+                        </>
+                      ) : (
+                        'Crear Refugio'
+                      )}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsCreateShelterOpen(false)}
+                      className="flex-1"
+                      disabled={isCreating}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {shelters.length === 0 ? (
+              <p className="text-muted-foreground col-span-full text-center py-8">
+                No hay refugios registrados
+              </p>
+            ) : (
+              shelters.map(shelter => {
+                const shelterStats = shelterBedStats[shelter.id] || { total: 0, available: 0, occupied: 0, occupancyRate: 0 };
+                
+                return (
+                  <Card key={shelter.id} className="border">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-start justify-between">
+                        <span className="line-clamp-1">{shelter.name}</span>
+                        {shelterStats.available === 0 ? (
+                          <Badge variant="destructive" className="ml-2">Lleno</Badge>
+                        ) : shelterStats.available <= 3 ? (
+                          <Badge variant="secondary" className="ml-2">Poco espacio</Badge>
+                        ) : (
+                          <Badge className="ml-2" style={{ backgroundColor: '#06b6d4', color: 'white' }}>
+                            Disponible
+                          </Badge>
+                        )}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span className="line-clamp-1">{shelter.address}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Phone className="h-4 w-4" />
+                        <span>{shelter.phone}</span>
+                      </div>
+                      
+                      <div className="pt-2 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Capacidad:</span>
+                          <span className="font-medium">{shelter.capacity} personas</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Camas totales:</span>
+                          <span className="font-medium">{shelterStats.total}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Disponibles:</span>
+                          <span className="font-medium" style={{ color: '#06b6d4' }}>
+                            {shelterStats.available}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Ocupadas:</span>
+                          <span className="font-medium text-red-600">
+                            {shelterStats.occupied}
+                          </span>
+                        </div>
+                        <Progress value={shelterStats.occupancyRate} className="h-2" />
+                        <p className="text-xs text-muted-foreground text-center">
+                          {shelterStats.occupancyRate}% ocupación
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Cards de Servicios Globales */}
+      <Card className="border-2">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" style={{ color: '#06b6d4' }} />
+              Servicios Disponibles
+            </CardTitle>
+            <Dialog open={isCreateServiceOpen} onOpenChange={setIsCreateServiceOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar Servicio
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Crear Nuevo Servicio</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Nombre del Servicio *</Label>
+                    <Input
+                      placeholder="Ej: Hospedaje, Comida, Lavandería"
+                      value={newService.name}
+                      onChange={(e) => setNewService({...newService, name: e.target.value})}
+                      maxLength={100}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Descripción *</Label>
+                    <Textarea
+                      placeholder="Describe el servicio que se ofrece"
+                      value={newService.description}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewService({...newService, description: e.target.value})}
+                      rows={3}
+                      maxLength={500}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {newService.description.length}/500 caracteres
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Icono *</Label>
+                    <Select value={newService.iconKey} onValueChange={(v: string) => setNewService({...newService, iconKey: v})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar icono" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px]">
+                        {availableIcons.map(icon => {
+                          const IconComponent = getIconComponent(icon.key);
+                          return (
+                            <SelectItem key={icon.key} value={icon.key}>
+                              <div className="flex items-center gap-2">
+                                <IconComponent className="h-4 w-4" />
+                                <span>{icon.label}</span>
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {newService.iconKey && (
+                    <div className="p-4 border rounded-lg bg-muted/50">
+                      <p className="text-sm text-muted-foreground mb-2">Vista previa:</p>
+                      <div className="flex items-center gap-3">
+                        {(() => {
+                          const IconComponent = getIconComponent(newService.iconKey);
+                          return <IconComponent className="h-8 w-8" style={{ color: '#06b6d4' }} />;
+                        })()}
+                        <div>
+                          <p className="font-medium">{newService.name || 'Nombre del servicio'}</p>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {newService.description || 'Descripción del servicio'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      className="flex-1" 
+                      onClick={handleCreateService}
+                      disabled={isCreating}
+                    >
+                      {isCreating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Creando...
+                        </>
+                      ) : (
+                        'Crear Servicio'
+                      )}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsCreateServiceOpen(false)}
+                      className="flex-1"
+                      disabled={isCreating}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {services.length === 0 ? (
+              <p className="text-muted-foreground col-span-full text-center py-8">
+                No hay servicios registrados
+              </p>
+            ) : (
+              services.map(service => {
+                const IconComponent = getIconComponent(service.iconKey);
+                
+                return (
+                  <Card key={service.id} className="border hover:border-cyan-500 transition-colors">
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col items-center text-center space-y-3">
+                        <div className="p-3 rounded-full bg-cyan-50">
+                          <IconComponent className="h-8 w-8" style={{ color: '#06b6d4' }} />
+                        </div>
+                        <h3 className="font-semibold">{service.name}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {service.description}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Uso de Servicios con datos reales */}
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -128,60 +660,66 @@ export function DashboardStats() {
         </CardHeader>
         <CardContent>
           <div className="space-y-7">
-            {bedsByService.map((service) => {
-              const totalUsed = service.inUse + service.reserved;
-              const usagePercent = (totalUsed / service.total) * 100;
-              
-              return (
-                <div key={service.service} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4>{service.service}</h4>
-                    <div className="flex gap-3">
-                      <Badge variant="outline" className="px-4 py-1">
-                        {totalUsed}/{service.total}
-                      </Badge>
-                      {service.available === 0 ? (
-                        <Badge variant="destructive" className="px-3 py-1">Completo</Badge>
-                      ) : service.available <= 3 ? (
-                        <Badge variant="secondary" className="px-3 py-1">
-                          <AlertCircle className="h-4 w-4 mr-1" />
-                          Poca capacidad
+            {serviceStats.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                No hay estadísticas de servicios disponibles
+              </p>
+            ) : (
+              serviceStats.map((serviceStat) => {
+                const usagePercent = serviceStat.total > 0 
+                  ? Math.round((serviceStat.occupied / serviceStat.total) * 100) 
+                  : 0;
+                
+                return (
+                  <div key={serviceStat.serviceId} className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold">{serviceStat.service}</h4>
+                      <div className="flex gap-3">
+                        <Badge variant="outline" className="px-4 py-1">
+                          {serviceStat.occupied}/{serviceStat.total}
                         </Badge>
-                      ) : (
-                        <Badge className="px-3 py-1" style={{ backgroundColor: '#06b6d4', color: 'white' }}>
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Disponible
-                        </Badge>
-                      )}
+                        {serviceStat.available === 0 ? (
+                          <Badge variant="destructive" className="px-3 py-1">Completo</Badge>
+                        ) : serviceStat.available <= 3 ? (
+                          <Badge variant="secondary" className="px-3 py-1">
+                            <AlertCircle className="h-4 w-4 mr-1" />
+                            Poca capacidad
+                          </Badge>
+                        ) : (
+                          <Badge className="px-3 py-1" style={{ backgroundColor: '#06b6d4', color: 'white' }}>
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Disponible
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <Progress 
+                      value={usagePercent} 
+                      className="h-4"
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-5">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Ocupados</p>
+                        <p className="text-2xl font-bold text-red-600">{serviceStat.occupied}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Disponibles</p>
+                        <p className="text-2xl font-bold" style={{ color: '#06b6d4' }}>
+                          {serviceStat.available}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  
-                  <Progress 
-                    value={usagePercent} 
-                    className="h-4"
-                  />
-                  
-                  <div className="grid grid-cols-3 gap-5">
-                    <div className="space-y-1">
-                      <p className="text-muted-foreground">En uso</p>
-                      <p className="text-xl text-red-600">{service.inUse}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-muted-foreground">Reservadas</p>
-                      <p className="text-xl text-yellow-600">{service.reserved}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-muted-foreground">Disponibles</p>
-                      <p className="text-xl" style={{ color: '#06b6d4' }}>{service.available}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </CardContent>
       </Card>
 
+      {/* Alertas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Card className="border-2">
           <CardHeader>
@@ -203,7 +741,6 @@ export function DashboardStats() {
             </div>
           </CardContent>
         </Card>
-
         <Card className="border-2">
           <CardHeader>
             <CardTitle>Próximos Vencimientos de Hospedaje</CardTitle>

@@ -6,7 +6,7 @@ import type { Service, ServiceCreateDto, ServiceUpdateDto } from '../types/model
 
 export const getAllServices = async (): Promise<Service[]> => {
   try {
-    const response = await axios.get(`${API_URL}/Service`, {
+    const response = await axios.get(`${API_URL}/Services`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`
       }

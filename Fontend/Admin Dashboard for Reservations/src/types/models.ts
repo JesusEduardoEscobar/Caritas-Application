@@ -253,6 +253,7 @@ export interface Service {
   name: string;
   description: string;
   iconKey: string;
+  total: number;
 }
 
 export interface ServiceCreateDto {

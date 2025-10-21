@@ -22,6 +22,22 @@ namespace Backend.Implementations
         }
 
         #region GET
+        public async Task<GlobalResponse<IEnumerable<Bed>>> GetAllBeds()
+        {
+            try
+            {
+                var beds = await _context.Beds.ToListAsync();
+
+                _logger.LogInformation("Se obtuvieron {Count} camas correctamente.", beds.Count);
+                return GlobalResponse<IEnumerable<Bed>>.Success(beds, beds.Count, "Obtención de Camas exitoso", "200");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener camas.");
+                return GlobalResponse<IEnumerable<Bed>>.Fault("Error al procesar Camas", "-1", null);
+            }
+        }
+
 
         public async Task<GlobalResponse<IEnumerable<Bed>>> GetBeds(int? shelterId = null, bool? available = null)
         {

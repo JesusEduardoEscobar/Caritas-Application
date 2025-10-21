@@ -12,6 +12,7 @@ namespace Backend.Interfaces
     public interface IBeds
     {
         // Get
+        Task<GlobalResponse<IEnumerable<Bed>>> GetAllBeds();
         Task<GlobalResponse<IEnumerable<Bed>>> GetBeds(int? shelterId = null, bool? available = null);
         Task<GlobalResponse<Bed>> GetBed(int id);
 
