@@ -207,7 +207,7 @@ export function UserManagement() {
     setEditPhone(user.phone || "");
     setEditVerified(Boolean(user.verified));
     setEditEconomicLevel(user.economicLevel || "Medio");
-    setEditShelterId(user.shelter_id ? user.shelter_id.toString() : ""); // 👈 Nuevo
+    setEditShelterId(user.shelterId ? user.shelterId.toString() : ""); // 👈 Nuevo
     setShowEditForm(true);
   };
 
@@ -271,6 +271,7 @@ export function UserManagement() {
     try {
       await createUser(registerName, registerEmail, registerPassword, registerConfirmPassword, registerNumero, registerFechaDeNacimiento, parseInt(registerShelterId), registerNivel, registerVerificado);
       toast.success("Usuario creado correctamente");
+      setRegisterName("");
       setRegisterEmail("");
       setRegisterPassword("");
       setRegisterConfirmPassword("");
@@ -341,6 +342,7 @@ export function UserManagement() {
                   <TableHead>Contacto</TableHead>
                   {isUser && <TableHead>Fecha de nacimiento</TableHead> }
                   {isUser && <TableHead>Nivel Económico</TableHead>  }
+                  <TableHead>Refugio</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
@@ -373,14 +375,27 @@ export function UserManagement() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{user.birthdate || '-'}</Badge>
-                    </TableCell>
                     {isUser && (
+                      <>
+                      <TableCell>
+                      <Badge variant="outline">
+                        {user.dateOfBirth
+                        ? new Date(user.dateOfBirth).toLocaleDateString("es-MX")
+                        : '-'}
+                      </Badge>
+                    </TableCell>
+                   
                       <TableCell>
                         <Badge variant="secondary">{user.economicLevel}</Badge>
                       </TableCell>
+                      </>
                     )}
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        <span>{shelters.find(s => s.id === user.shelterId)?.name || 'N/A'}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={user.verified ? 'default' : 'secondary'}>
                         {user.verified ? 'Verificado' : 'Sin verificar'}
@@ -428,13 +443,19 @@ export function UserManagement() {
 
       {/* BOTONES PRINCIPALES */}
       <div className="flex gap-4 mb-4">
-        <Button onClick={() => setShowUserForm(!showUserForm)}>
+        <Button onClick={() => {setShowUserForm(!showUserForm);
+                               setShowAdminForm(false);
+                               setShowRegisterUserForm(false)} }>
           Completar Registro Usuario
         </Button>
-        <Button onClick={() => setShowAdminForm(!showAdminForm)}>
+        <Button onClick={() => {setShowAdminForm(!showAdminForm);
+                                setShowUserForm(false);
+                                setShowRegisterUserForm(false)}}>
           Registrar Admin
         </Button>
-        <Button onClick={() => setShowRegisterUserForm(!showRegisterUserForm)}>
+      <Button onClick={() => {setShowRegisterUserForm(!showRegisterUserForm);
+                              setShowUserForm(false);
+                              setShowAdminForm(false)}}>
           Crear Usuario
         </Button>
       </div>
@@ -458,8 +479,11 @@ export function UserManagement() {
                   />
                 </div>
                 <Button 
+                  type="button"
                   onClick={() => {
-                    const userFound = allUsers.find(u => u.email === email);
+                    const userFound = allUsers.find(u => 
+                      u.email.trim().toLowerCase() === email.trim().toLowerCase()
+                    );
                     if (userFound) {
                       toast.success("Usuario encontrado");
                       setNumero(userFound.phone || "");
@@ -743,7 +767,7 @@ export function UserManagement() {
         </Card>
       )}
 
-      {/* Formulario crear usuario */}
+      {/* FORMULARIO CREAR USUARIO */}
       {showRegisterUserForm && (
         <Card className="border-2">
           <CardHeader>
@@ -800,12 +824,13 @@ export function UserManagement() {
                 />
               </div>
               <div>
-                <Label>Fecha de Nacimiento</Label>
+                <Label>Fecha de Nacimiento <span className="text-red-500">*</span></Label>
                 <Input
-                  placeholder="AAAA-MM-DD"
+                  type="date"
                   value={registerFechaDeNacimiento}
                   onChange={(e) => setRegisterFechaDeNacimiento(e.target.value)}
                   className="mt-1"
+                  max={new Date().toISOString().split('T')[0]}
                 />
               </div>
               <div>

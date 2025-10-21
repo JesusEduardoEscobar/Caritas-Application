@@ -136,6 +136,7 @@ namespace Backend.Implementations
                         u.Email,
                         u.Phone,
                         u.ShelterId,
+                        u.DateOfBirth,
                         u.EconomicLevel,
                         u.Verified,
                         u.Role

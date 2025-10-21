@@ -6,7 +6,7 @@ import { Label } from '../ui/label';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { useAuth } from './AuthProvider';
-import { Eye, EyeOff, Shield, Users } from 'lucide-react';
+import { Eye, EyeOff, Shield, Users, AlertCircle } from 'lucide-react';
 
 export function LoginForm() {
   const { login, isLoading } = useAuth();
@@ -29,6 +29,10 @@ export function LoginForm() {
     }
 
     const result = await login(loginData.email, loginData.password);
+    
+    // Debugging - verifica qué está devolviendo
+    console.log('Login result:', result);
+    
     if (!result.success) {
       setError(result.error || 'Error al iniciar sesión');
     }
@@ -39,7 +43,7 @@ export function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-indigo-100 rounded-full" style={{ backgroundColor: '#b2ebf2' }} >
+            <div className="p-3 bg-indigo-100 rounded-full" style={{ backgroundColor: '#b2ebf2' }}>
               <Shield className="h-8 w-8 text-indigo-600" style={{ color: '#06b6d4' }} />
             </div>
           </div>
@@ -95,13 +99,30 @@ export function LoginForm() {
                   </div>
                 </div>
 
+                {/* OPCIÓN 1: Alert de shadcn/ui con estilos explícitos */}
                 {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
+                  <Alert variant="destructive" className="bg-red-50 border-red-200">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800 ml-2">
+                      {error}
+                    </AlertDescription>
                   </Alert>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isLoading} style={{ backgroundColor: '#06b6d4' }}>
+                {/* OPCIÓN 2: Alert simple con Tailwind (alternativa) */}
+                {/* {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-800">{error}</p>
+                  </div>
+                )} */}
+
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading} 
+                  style={{ backgroundColor: '#06b6d4' }}
+                >
                   {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                 </Button>
               </form>

@@ -12,9 +12,10 @@ export const getUsers = async () => {
             }
         });
         // Si el backend devuelve { success: true, data: [...] }
+        console.log('Respuesta al obtener usuarios:', response.data);
         if (response.data?.data && Array.isArray(response.data.data)) {
         return response.data.data;
-        }
+        } 
         
         // Si el backend devuelve directamente el array [...]
         if (Array.isArray(response.data)) {

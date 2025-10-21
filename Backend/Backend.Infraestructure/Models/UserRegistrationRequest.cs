@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Backend.Infraestructure.Models
@@ -20,7 +21,34 @@ namespace Backend.Infraestructure.Models
         public bool? Verificacion { get; set; } // opcional
         public DateTime FechaDeNacimiento { get; set; }
     }
-    
+
+    public class CreateUserRequest
+    {
+        [JsonPropertyName("name")]
+        public string Nombre { get; set; }
+
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [JsonPropertyName("password")]
+        public string? Password { get; set; }
+
+        [JsonPropertyName("numero")]
+        public string Numero { get; set; }
+
+        [JsonPropertyName("shelterId")]
+        public int ShelterId { get; set; }
+
+        [JsonPropertyName("nivelEconomico")]
+        public string NivelEconomico { get; set; }
+
+        [JsonPropertyName("verificacion")]
+        public bool? Verificacion { get; set; }
+
+        [JsonPropertyName("fechaDeNacimiento")]
+        public DateTime FechaDeNacimiento { get; set; }
+    }
+
     public class AdminRegistrationRequest
     {
         public string Nombre { get; set; }
