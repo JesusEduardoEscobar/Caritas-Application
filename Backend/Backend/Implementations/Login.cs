@@ -165,6 +165,7 @@ namespace Backend.Implementations
                         u.Id,
                         u.Name,
                         u.Email,
+                        u.DateOfBirth,
                         u.Phone,
                         u.ShelterId,
                         u.EconomicLevel,
