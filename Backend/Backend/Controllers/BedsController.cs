@@ -20,6 +20,14 @@ namespace Backend.Controllers
         }
 
         //[Authorize(Roles = "Admin,User")]
+        [HttpGet("GetAllBeds")]
+        public async Task<ActionResult<IEnumerable<Bed>>> GetAllBeds()
+        {
+            var response = await _beds.GetBeds();
+            return MapResponse(response);
+        }
+
+        //[Authorize(Roles = "Admin,User")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Bed>>> GetBeds([FromQuery] int? shelterId = null, [FromQuery] bool? available = null)
         {
