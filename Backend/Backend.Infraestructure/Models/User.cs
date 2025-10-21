@@ -1,4 +1,4 @@
-﻿namespace Backend.Infraestructure.Models
+﻿    namespace Backend.Infraestructure.Models
 {
     public class User
     {

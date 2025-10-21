@@ -12,7 +12,7 @@ namespace Backend.Interfaces
     public interface IReservations
     {
         // Get
-        Task<GlobalResponse<IEnumerable<Reservation>>> GetReservations(int? shelterId = null, int? userId = null, ReservationStatus? status = null);
+        Task<GlobalResponse<IEnumerable<Reservation>>> GetReservations(int? shelterId = null, int? userId = null, ReservationStatus? status = null, DateTime? date = null);
         Task<GlobalResponse<Reservation>> GetReservation(int id);
         Task<GlobalResponse<Reservation>> GetReservation(string qrData);
 

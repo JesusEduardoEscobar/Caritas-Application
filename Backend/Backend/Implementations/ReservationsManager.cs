@@ -6,6 +6,7 @@ using Backend.Interfaces;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Vml.Office;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Humanizer;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata;
@@ -17,6 +18,7 @@ namespace Backend.Implementations
         private readonly NeonTechDbContext _context;
         private readonly ILogger<ReservationsManager> _logger;
         private const double _hoursBetweenReservations = 2;
+        private const double _daysBetweenGetReservation = 3;
 
         public ReservationsManager(NeonTechDbContext context, ILogger<ReservationsManager> logger)
         {
@@ -26,7 +28,7 @@ namespace Backend.Implementations
 
         #region GET
 
-        public async Task<GlobalResponse<IEnumerable<Reservation>>> GetReservations(int? shelterId = null, int? userId = null, ReservationStatus? status = null)
+        public async Task<GlobalResponse<IEnumerable<Reservation>>> GetReservations(int? shelterId = null, int? userId = null, ReservationStatus? status = null, DateTime? date = null)
         {
             try
             {
@@ -53,6 +55,12 @@ namespace Backend.Implementations
 
                 if (status.HasValue)
                     query = query.Where(r => r.Status == status.Value);
+
+                if (date.HasValue)
+                    query = query.Where(r =>
+                        (r.Status == ReservationStatus.reserved || r.Status == ReservationStatus.checked_in)
+                        && (date.Value.Date < r.EndDate) && (date.Value.Date.AddDays(_daysBetweenGetReservation) > r.StartDate)
+                    );
 
                 var reservations = await query
                     .Select(r => new Reservation
@@ -227,7 +235,7 @@ namespace Backend.Implementations
                     return GlobalResponse<Reservation>.Fault("Reservacion no encontrada", "404", null);
                 }
 
-                if(await HasDateConflict(existing.BedId, dto.StartDate, dto.EndDate))
+                if(await HasDateConflict(dto.Id, existing.BedId, dto.StartDate, dto.EndDate))
                 {
                     _logger.LogWarning("Conflicto de fechas al actualizar Reservacion {dto.Id}.", dto.Id);
                     return GlobalResponse<Reservation>.Fault($"Conflicto de fechas al actualizar Reservacion {dto.Id}, debe haber un umbral de {_hoursBetweenReservations} horas entre reservaciones del mismo cuarto", "409", null);
@@ -279,10 +287,10 @@ namespace Backend.Implementations
         #endregion
 
 
-        private async Task<bool> HasDateConflict(int bedId, DateTime startDate, DateTime endDate)
+        private async Task<bool> HasDateConflict(int reservationId, int bedId, DateTime startDate, DateTime endDate)
         {
             return await _context.Reservations
-                .AnyAsync(r => r.BedId == bedId
+                .AnyAsync(r => r.BedId == bedId && r.Id != reservationId
                        && (r.Status == ReservationStatus.reserved || r.Status == ReservationStatus.checked_in)
                        && (startDate.AddHours(-_hoursBetweenReservations) < r.EndDate) && (endDate.AddHours(_hoursBetweenReservations) > r.StartDate)
                 );
