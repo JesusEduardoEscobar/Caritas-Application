@@ -38,3 +38,10 @@ launchSettings.json
 # Archivos específicos que no se deben versionar
 Backend/Backend.Infrastructure/archivo-temporal.txt
 Backend/Backend.Infrastructure/config-local.json
+
+# Front Web
+
+node_modules/
+.vite/
+dist/
+build/

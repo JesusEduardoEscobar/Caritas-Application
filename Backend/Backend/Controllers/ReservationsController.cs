@@ -26,9 +26,9 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Reservation>>> GetReservations([FromQuery] int? shelterId = null, [FromQuery] int? userId = null, [FromQuery] ReservationStatus? status = null)
+        public async Task<ActionResult<IEnumerable<Reservation>>> GetReservations([FromQuery] int? shelterId = null, [FromQuery] int? userId = null, [FromQuery] ReservationStatus? status = null, [FromQuery] DateTime? date = null)
         {
-            var response = await _reservations.GetReservations(shelterId, userId, status);
+            var response = await _reservations.GetReservations(shelterId, userId, status, date);
             return MapResponse(response);
         }
 
