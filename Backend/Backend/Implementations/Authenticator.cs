@@ -408,7 +408,9 @@ namespace Backend.Implementations
                     usuario.Email,
                     usuario.ShelterId,
                     usuario.Verified,
-                    usuario.EconomicLevel
+                    usuario.EconomicLevel,
+                    usuario.Phone,
+                    usuario.DateOfBirth
                 };
 
                 return GlobalResponse<dynamic>.Success(result, 1, "Usuario actualizado exitosamente", "200");
