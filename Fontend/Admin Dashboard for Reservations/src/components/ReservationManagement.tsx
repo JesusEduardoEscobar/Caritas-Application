@@ -6,99 +6,38 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Calendar, Search, Plus, QrCode, Check, X, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { Calendar, Search, Check, X, QrCode, Clock, Plus } from 'lucide-react';
+import { 
+  getAllReservations, 
+  getReservationsByShelter,
+  updateReservationStatus,
+  deleteReservation,
+  filterReservations,
+  getStatusLabel,
+  getStatusColor,
+  formatReservationDate,
+  getReservationStats,
+  type Reservation,
+  type ReservationFilters
+} from '../Services/authReservations';
+import { getAllServices } from '../Services/authServices';
+import { getAllShelters } from '../Services/authShelter';
+import type { Service } from '../types/models.ts';
+import type { Shelter } from '../types/models.ts';
+import { useAuth } from './auth/AuthProvider';
 import { toast } from 'sonner';
 
-// Importar servicios existentes
-import { getBeds } from '../Services/authBeds';
-import { getAllShelters } from '../Services/authShelter';
-import { getAllServices } from '../Services/authServices';
-import { getUsers } from '../Services/authUser';
-
-// Mock data para reservas hasta que tengas el endpoint
-const mockReservationData = [
-  { 
-    id: 1001, 
-    pilgrim: 'Peregrino A', 
-    bedNumber: '101',
-    service: 'Hospedaje',
-    checkIn: '2024-01-15',
-    checkOut: '2024-01-18',
-    status: 'confirmed',
-    confirmationMethod: 'qr',
-    createdAt: '2024-01-14 10:30'
-  },
-  { 
-    id: 1002, 
-    pilgrim: 'Peregrino B', 
-    bedNumber: '201',
-    service: 'Hospedaje',
-    checkIn: '2024-01-14',
-    checkOut: '2024-01-20',
-    status: 'pending',
-    confirmationMethod: 'pending',
-    createdAt: '2024-01-14 09:15'
-  },
-  { 
-    id: 1003, 
-    pilgrim: 'Peregrino C', 
-    bedNumber: '202',
-    service: 'Comida',
-    checkIn: '2024-01-16',
-    checkOut: '2024-01-19',
-    status: 'pending',
-    confirmationMethod: 'pending',
-    createdAt: '2024-01-14 14:20'
-  },
-  { 
-    id: 1004, 
-    pilgrim: 'Peregrino D', 
-    bedNumber: '1',
-    service: 'Regaderas',
-    checkIn: '2024-01-17',
-    checkOut: '2024-01-22',
-    status: 'cancelled',
-    confirmationMethod: 'manual',
-    createdAt: '2024-01-13 16:45'
-  }
-];
-
-const statusLabels = {
-  pending: 'Pendiente',
-  confirmed: 'Confirmada',
-  cancelled: 'Cancelada',
-  completed: 'Completada'
-};
-
-const statusColors = {
-  pending: 'secondary',
-  confirmed: 'default',
-  cancelled: 'destructive',
-  completed: 'outline'
-} as const;
-
-export function ReservationManagement() {
-  const [reservations, setReservations] = useState(mockReservationData);
-  const [beds, setBeds] = useState<any[]>([]);
-  const [shelters, setShelters] = useState<any[]>([]);
-  const [services, setServices] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+export function ReservationsManagement() {
+  const { admin } = useAuth();
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [shelters, setShelters] = useState<Shelter[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Filtros
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedService, setSelectedService] = useState('Todos');
-  const [selectedStatus, setSelectedStatus] = useState('Todos');
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
-  const [newReservation, setNewReservation] = useState({
-    userId: '',
-    shelterId: '',
-    serviceId: '',
-    bedId: '',
-    checkIn: '',
-    checkOut: ''
-  });
+  const [selectedService, setSelectedService] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
 
   useEffect(() => {
     loadData();
@@ -107,229 +46,105 @@ export function ReservationManagement() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [bedsData, sheltersData, servicesData, usersData] = await Promise.all([
-        getBeds(),
-        getAllShelters(),
-        getAllServices(),
-        getUsers()
+      await Promise.all([
+        loadReservations(),
+        loadServices(),
+        loadShelters()
       ]);
-
-      setBeds(bedsData);
-      setShelters(sheltersData);
-      setServices(servicesData);
-      setUsers(usersData);
-
-      toast.success('Datos cargados correctamente');
     } catch (error) {
       console.error('Error al cargar datos:', error);
-      toast.error('Error al cargar los datos');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredReservations = reservations.filter(reservation => {
-    const matchesSearch = reservation.pilgrim.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         reservation.bedNumber.includes(searchTerm) ||
-                         reservation.id.toString().includes(searchTerm);
-    const matchesService = selectedService === 'Todos' || reservation.service === selectedService;
-    const matchesStatus = selectedStatus === 'Todos' || reservation.status === selectedStatus;
-    
-    return matchesSearch && matchesService && matchesStatus;
-  });
-
-  const getStatusBadge = (status: string) => {
-    return (
-      <Badge variant={statusColors[status as keyof typeof statusColors]}>
-        {statusLabels[status as keyof typeof statusLabels]}
-      </Badge>
-    );
-  };
-
-  const getConfirmationIcon = (method: string, status: string) => {
-    if (status === 'confirmed') {
-      return method === 'qr' ? (
-        <QrCode className="h-4 w-4 text-green-600" />
-      ) : (
-        <Check className="h-4 w-4 text-green-600" />
-      );
+  const loadReservations = async () => {
+    try {
+      let data: Reservation[];
+      
+      if (admin?.shelter_id) {
+        const shelterId = admin.shelter_id;
+        data = await getReservationsByShelter(shelterId);
+      } else {
+        data = await getAllReservations();
+      }
+      
+      setReservations(data);
+    } catch (error: any) {
+      console.error('Error al cargar reservas:', error);
+      toast.error(error.message || 'Error al cargar las reservas');
     }
-    if (status === 'pending') {
-      return <Clock className="h-4 w-4 text-amber-600" />;
+  };
+
+  const loadServices = async () => {
+    try {
+      const data = await getAllServices();
+      setServices(data);
+    } catch (error) {
+      console.error('Error al cargar servicios:', error);
     }
-    if (status === 'cancelled') {
-      return <X className="h-4 w-4 text-red-600" />;
+  };
+
+  const loadShelters = async () => {
+    try {
+      const data = await getAllShelters();
+      setShelters(data);
+    } catch (error) {
+      console.error('Error al cargar refugios:', error);
     }
-    return <AlertCircle className="h-4 w-4 text-gray-600" />;
   };
 
-  const handleConfirmReservation = (id: number) => {
-    toast.success(`Reserva #${id} confirmada`);
-    setReservations(prev => prev.map(r => 
-      r.id === id ? { ...r, status: 'confirmed' as const, confirmationMethod: 'manual' as const } : r
-    ));
+  const handleStatusChange = async (reservationId: number, newStatus: any) => {
+    try {
+      await updateReservationStatus(reservationId, newStatus);
+      toast.success('Estado actualizado correctamente');
+      await loadReservations();
+    } catch (error: any) {
+      console.error('Error al actualizar estado:', error);
+      toast.error(error.message || 'Error al actualizar el estado');
+    }
   };
 
-  const handleCancelReservation = (id: number) => {
-    toast.success(`Reserva #${id} cancelada`);
-    setReservations(prev => prev.map(r => 
-      r.id === id ? { ...r, status: 'cancelled' as const } : r
-    ));
+  const handleDeleteReservation = async (id: number) => {
+    if (!window.confirm('¿Está seguro de eliminar esta reserva?')) {
+      return;
+    }
+
+    try {
+      await deleteReservation(id);
+      toast.success('Reserva eliminada exitosamente');
+      await loadReservations();
+    } catch (error: any) {
+      console.error('Error al eliminar reserva:', error);
+      toast.error(error.message || 'Error al eliminar la reserva');
+    }
   };
 
-  const handleCreateReservation = async () => {
-    toast.success('Reserva creada correctamente');
-    setIsCreateDialogOpen(false);
-    setNewReservation({
-      userId: '',
-      shelterId: '',
-      serviceId: '',
-      bedId: '',
-      checkIn: '',
-      checkOut: ''
-    });
+  // Aplicar filtros
+  const filters: ReservationFilters = {
+    search: searchTerm,
+    status: selectedStatus !== 'all' ? selectedStatus : undefined,
+    serviceId: selectedService !== 'all' ? parseInt(selectedService) : undefined
   };
 
-  const availableBeds = beds.filter(bed => 
-    bed.isAvailable && bed.shelterId.toString() === newReservation.shelterId
-  );
-
-  const uniqueServices = ['Todos', ...new Set(services.map(s => s.name))];
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
-      </div>
-    );
-  }
+  const filteredReservations = filterReservations(reservations, filters);
+  const stats = getReservationStats(filteredReservations);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <h2 className="text-2xl">Gestión de Reservas</h2>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Reserva
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Crear Nueva Reserva</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Usuario/Peregrino</Label>
-                <Select value={newReservation.userId} onValueChange={(v: string) => setNewReservation({...newReservation, userId: v})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar usuario" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map(user => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
-                        {user.name || user.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Refugio</Label>
-                <Select value={newReservation.shelterId} onValueChange={(v: string) => setNewReservation({...newReservation, shelterId: v, bedId: ''})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar refugio" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {shelters.map(shelter => (
-                      <SelectItem key={shelter.id} value={shelter.id.toString()}>
-                        {shelter.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Servicio</Label>
-                <Select value={newReservation.serviceId} onValueChange={(v: string) => setNewReservation({...newReservation, serviceId: v})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar servicio" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {services.map(service => (
-                      <SelectItem key={service.id} value={service.id.toString()}>
-                        {service.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {newReservation.shelterId && (
-                <div className="space-y-2">
-                  <Label>Cama disponible</Label>
-                  <Select value={newReservation.bedId} onValueChange={(v: string) => setNewReservation({...newReservation, bedId: v})}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar cama" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableBeds.length > 0 ? (
-                        availableBeds.map(bed => (
-                          <SelectItem key={bed.id} value={bed.id.toString()}>
-                            {bed.bedNumber}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <SelectItem value="none" disabled>No hay camas disponibles</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Fecha Ingreso</Label>
-                  <Input 
-                    type="date" 
-                    value={newReservation.checkIn}
-                    onChange={(e) => setNewReservation({...newReservation, checkIn: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Fecha Salida</Label>
-                  <Input 
-                    type="date" 
-                    value={newReservation.checkOut}
-                    onChange={(e) => setNewReservation({...newReservation, checkOut: e.target.value})}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex gap-2 pt-4">
-                <Button className="flex-1" onClick={handleCreateReservation}>
-                  Crear Reserva
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsCreateDialogOpen(false)}
-                  className="flex-1"
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <h2 className="text-2xl font-bold">Gestión de Reservas</h2>
+        <Button className="bg-cyan-600 hover:bg-cyan-700">
+          <Plus className="h-4 w-4 mr-2" />
+          Nueva Reserva
+        </Button>
       </div>
 
-      <Card>
+      {/* Filtros */}
+      <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
+            <Calendar className="h-6 w-6 text-cyan-500" />
             Filtros de Reserva
           </CardTitle>
         </CardHeader>
@@ -347,142 +162,183 @@ export function ReservationManagement() {
                 />
               </div>
             </div>
+
             <div className="space-y-2">
               <Label>Servicio</Label>
               <Select value={selectedService} onValueChange={setSelectedService}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  {uniqueServices.map(service => (
-                    <SelectItem key={service} value={service}>{service}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Estado</Label>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Todos">Todos los estados</SelectItem>
-                  {Object.entries(statusLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
+                  <SelectItem value="all">Todos</SelectItem>
+                  {services.map(service => (
+                    <SelectItem key={service.id} value={service.id.toString()}>
+                      {service.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label>Estado</Label>
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todos los estados" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  <SelectItem value="pending">Pendiente</SelectItem>
+                  <SelectItem value="confirmed">Confirmada</SelectItem>
+                  <SelectItem value="cancelled">Cancelada</SelectItem>
+                  <SelectItem value="completed">Completada</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Estadísticas */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6 pt-6 border-t">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Total</p>
+              <p className="text-2xl font-bold text-cyan-500">{stats.total}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Pendientes</p>
+              <p className="text-2xl font-bold text-yellow-500">{stats.pending}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Confirmadas</p>
+              <p className="text-2xl font-bold text-green-500">{stats.confirmed}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Activas</p>
+              <p className="text-2xl font-bold text-blue-500">{stats.active}</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Canceladas</p>
+              <p className="text-2xl font-bold text-red-500">{stats.cancelled}</p>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
+      {/* Lista de Reservas */}
+      <Card className="border-2">
         <CardHeader>
-          <CardTitle>Lista de Reservas ({filteredReservations.length})</CardTitle>
+          <CardTitle>
+            Lista de Reservas ({filteredReservations.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Peregrino</TableHead>
-                <TableHead>Recurso</TableHead>
-                <TableHead>Servicio</TableHead>
-                <TableHead>Fechas</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Confirmación</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredReservations.map(reservation => (
-                <TableRow key={reservation.id}>
-                  <TableCell>#{reservation.id}</TableCell>
-                  <TableCell>{reservation.pilgrim}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {reservation.service === 'Hospedaje' ? `Cama ${reservation.bedNumber}` : `#${reservation.bedNumber}`}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{reservation.service}</TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>Entrada: {reservation.checkIn}</div>
-                      <div>Salida: {reservation.checkOut}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(reservation.status)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {getConfirmationIcon(reservation.confirmationMethod, reservation.status)}
-                      <span className="text-xs">
-                        {reservation.confirmationMethod === 'qr' ? 'QR' : 
-                         reservation.confirmationMethod === 'manual' ? 'Manual' : 'Pendiente'}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      {reservation.status === 'pending' && (
-                        <>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleConfirmReservation(reservation.id)}
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => handleCancelReservation(reservation.id)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                      {reservation.status === 'pending' && (
-                        <Button variant="ghost" size="sm">
-                          <QrCode className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Resumen de Confirmaciones QR</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 border rounded-lg">
-              <Clock className="h-8 w-8 mx-auto mb-2 text-amber-600" />
-              <div className="text-2xl">{reservations.filter(r => r.status === 'pending').length}</div>
-              <p className="text-sm text-muted-foreground">Pendientes de QR</p>
+          {isLoading ? (
+            <div className="text-center py-10">
+              <p className="text-muted-foreground">Cargando reservas...</p>
             </div>
-            <div className="text-center p-4 border rounded-lg">
-              <QrCode className="h-8 w-8 mx-auto mb-2 text-green-600" />
-              <div className="text-2xl">{reservations.filter(r => r.confirmationMethod === 'qr').length}</div>
-              <p className="text-sm text-muted-foreground">Confirmadas por QR</p>
+          ) : filteredReservations.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-muted-foreground">No hay reservas que mostrar</p>
             </div>
-            <div className="text-center p-4 border rounded-lg">
-              <Check className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-              <div className="text-2xl">{reservations.filter(r => r.status === 'confirmed').length}</div>
-              <p className="text-sm text-muted-foreground">Total Confirmadas</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Peregrino</TableHead>
+                    <TableHead>Recurso</TableHead>
+                    <TableHead>Servicio</TableHead>
+                    <TableHead>Fechas</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Confirmación</TableHead>
+                    <TableHead>Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredReservations.map(reservation => (
+                    <TableRow key={reservation.id}>
+                      <TableCell className="font-medium">
+                        #{reservation.id}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{reservation.user?.name || 'N/A'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {reservation.user?.email}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {reservation.bed?.bedNumber || 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        {reservation.service?.name || reservation.shelter?.name || 'N/A'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          <p>Entrada: {formatReservationDate(reservation.checkInDate)}</p>
+                          <p>Salida: {formatReservationDate(reservation.checkOutDate)}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(reservation.status)}>
+                          {getStatusLabel(reservation.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {reservation.status === 'confirmed' && reservation.confirmationCode ? (
+                          <div className="flex items-center gap-2">
+                            <QrCode className="h-4 w-4 text-green-600" />
+                            <span className="text-xs">{reservation.confirmationCode}</span>
+                          </div>
+                        ) : reservation.status === 'pending' ? (
+                          <div className="flex items-center gap-2 text-yellow-600">
+                            <Clock className="h-4 w-4" />
+                            <span className="text-xs">Pendiente</span>
+                          </div>
+                        ) : reservation.status === 'cancelled' ? (
+                          <span className="text-xs text-red-600">Manual</span>
+                        ) : null}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {reservation.status === 'pending' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Confirmar"
+                              onClick={() => handleStatusChange(reservation.id, 'confirmed')}
+                            >
+                              <Check className="h-4 w-4 text-green-600" />
+                            </Button>
+                          )}
+                          {(reservation.status === 'pending' || reservation.status === 'confirmed') && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Cancelar"
+                              onClick={() => handleStatusChange(reservation.id, 'cancelled')}
+                            >
+                              <X className="h-4 w-4 text-red-600" />
+                            </Button>
+                          )}
+                          {reservation.confirmationCode && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Ver QR"
+                            >
+                              <QrCode className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
