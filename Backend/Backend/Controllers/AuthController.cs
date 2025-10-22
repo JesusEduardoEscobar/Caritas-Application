@@ -57,7 +57,7 @@ namespace Backend.Controllers
                 var response = await _auth.RegisterLite(request.Nombre, request.Email, request.Password, request.Numero, request.FechaDeNacimiento);
                 if (response == null || response.Data == null)
                 {
-                    return BadRequest(GlobalResponse<string>.Fault("Error al registrar usuario", "400", null));
+                    return BadRequest(GlobalResponse<string>.Fault(response?.Message ?? "Error al registrar usuario", "400", null));
                 }
                 return Ok(response);
             }
