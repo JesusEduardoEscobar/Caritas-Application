@@ -102,7 +102,7 @@ namespace Backend.Implementations
                     return GlobalResponse<dynamic>.Fault("La fecha de nacimiento no puede ser futura", "400", null);
                 if (!new EmailAddressAttribute().IsValid(email))
                     return GlobalResponse<dynamic>.Fault("Correo inválido", "400", null);
-                if (!Regex.IsMatch(numero, @"^(\+52)?\d{10}$"))
+                if (!Regex.IsMatch(numero, @"^\+?[1-9]\d{1,3}\d{6,14}$"))
                     return GlobalResponse<dynamic>.Fault("El número de teléfono debe tener 10 dígitos", "400", null);
 
                 var nuevoUsuario = new User

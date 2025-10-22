@@ -95,7 +95,7 @@ namespace Backend.Controllers
                 var response = await _users.GetUsers();
                 if (response == null || response.Data == null || !response.Data.Any())
                 {
-                    return NotFound(GlobalResponse<string>.Fault("No se encontraron usuarios", "404", null));
+                    return NotFound(GlobalResponse<string>.Fault(response.Message, "404", null));
                 }
                 return Ok(response);
             }
@@ -118,7 +118,7 @@ namespace Backend.Controllers
                 var response = await _users.GetUserById(id);
                 if (response == null || response.Data == null || !response.Data.Any())
                 {
-                    return NotFound(GlobalResponse<string>.Fault("Usuario no encontrado", "404", null));
+                    return NotFound(GlobalResponse<string>.Fault(response.Message, "404", null));
                 }
                 return Ok(response);
             }
@@ -141,7 +141,7 @@ namespace Backend.Controllers
                 var response = await _users.FilterByShelter(shelterId);
                 if (response == null || response.Data == null || !response.Data.Any())
                 {
-                    return NotFound(GlobalResponse<string>.Fault("No se encontraron usuarios para el refugio especificado", "404", null));
+                    return NotFound(GlobalResponse<string>.Fault(response.Message, "404", null));
                 }
                 return Ok(response);
             }

@@ -3,7 +3,7 @@ import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { QrCode, Users, Calendar, BarChart3 } from 'lucide-react';
 import { UserManagement } from './UserManagement';
-import { ReservationManagement } from './ReservationManagement';
+import { ReservationsManagement } from './ReservationManagement';
 import { DashboardStats } from './DashboardStats';
 import { CalendarView } from './CalendarView';
 import { AuthHeader } from './auth/AuthHeader';
@@ -59,7 +59,7 @@ export function AdminDashboard({ onActivateQRMode, isMobile }: AdminDashboardPro
           </TabsContent>
 
           <TabsContent value="reservations">
-            <ReservationManagement />
+            <ReservationsManagement />
           </TabsContent>
 
           <TabsContent value="users">
