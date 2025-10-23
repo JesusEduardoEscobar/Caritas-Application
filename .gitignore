@@ -42,7 +42,7 @@ Backend/Backend.Infrastructure/config-local.json
 # Front Web
 
 Fontend/node_modules/
-Fontend/AdminDashboard for Reservations/node_modules
+Fontend/Admin Dashboard for Reservations/node_modules
 .vite/
 dist/
 build/
