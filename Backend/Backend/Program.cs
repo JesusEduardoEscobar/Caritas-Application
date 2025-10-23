@@ -36,6 +36,8 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
+builder.Services.AddScoped<IQrService, QrService>();
+
 builder.Services.AddScoped<IAuthenticator, Authenticator>();
 builder.Services.AddScoped<IUsers, Login>();
 
