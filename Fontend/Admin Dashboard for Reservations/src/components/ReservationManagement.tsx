@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Calendar, Search, Check, X, QrCode, Clock, Plus } from 'lucide-react';
+import { Calendar, Search, Check, X, QrCode, Clock, Plus, Loader2 } from 'lucide-react';
 import { 
   getAllReservations, 
   getReservationsByShelter,
@@ -22,16 +22,28 @@ import {
 } from '../Services/authReservations';
 import { getAllServices } from '../Services/authServices';
 import { getAllShelters } from '../Services/authShelter';
+import { getBeds } from '../Services/authBeds';
+import { getUsers } from '../Services/authUser';
 import type { Service } from '../types/models.ts';
 import type { Shelter } from '../types/models.ts';
 import { useAuth } from './auth/AuthProvider';
 import { toast } from 'sonner';
 
+// Interfaz extendida para reservas enriquecidas
+interface EnrichedReservation extends Reservation {
+  enrichedUser?: any;
+  enrichedBed?: any;
+  enrichedShelter?: any;
+  enrichedService?: any;
+}
+
 export function ReservationsManagement() {
   const { admin } = useAuth();
-  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [reservations, setReservations] = useState<EnrichedReservation[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [shelters, setShelters] = useState<Shelter[]>([]);
+  const [beds, setBeds] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Filtros
@@ -46,51 +58,80 @@ export function ReservationsManagement() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      await Promise.all([
-        loadReservations(),
-        loadServices(),
-        loadShelters()
+      // Cargar todos los datos en paralelo
+      const [usersData, bedsData, servicesData, sheltersData] = await Promise.all([
+        getUsers(),
+        getBeds(),
+        getAllServices(),
+        getAllShelters()
       ]);
+
+      setUsers(usersData);
+      setBeds(bedsData);
+      setServices(servicesData);
+      setShelters(sheltersData);
+
+      // Después cargar y enriquecer las reservas
+      await loadAndEnrichReservations(usersData, bedsData, servicesData, sheltersData);
     } catch (error) {
       console.error('Error al cargar datos:', error);
+      toast.error('Error al cargar los datos');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadReservations = async () => {
+  const loadAndEnrichReservations = async (
+    usersData: any[],
+    bedsData: any[],
+    servicesData: any[],
+    sheltersData: any[]
+  ) => {
     try {
-      let data: Reservation[];
+      let reservationsData: Reservation[];
       
       if (admin?.shelter_id) {
-        const shelterId = admin.shelter_id;
-        data = await getReservationsByShelter(shelterId);
+        reservationsData = await getReservationsByShelter(admin.shelter_id);
       } else {
-        data = await getAllReservations();
+        reservationsData = await getAllReservations();
       }
-      
-      setReservations(data);
+
+      console.log('Reservas originales:', reservationsData);
+
+      // Enriquecer cada reserva con datos completos
+      const enrichedReservations: EnrichedReservation[] = reservationsData.map(reservation => {
+        // Buscar usuario
+        const enrichedUser = reservation.user || usersData.find(u => u.id === reservation.userId);
+        
+        // Buscar cama
+        const enrichedBed = reservation.bed || bedsData.find(b => b.id === reservation.bedId);
+        
+        // Buscar shelter (desde la cama o directamente)
+        let enrichedShelter = reservation.shelter;
+        if (!enrichedShelter && enrichedBed?.shelterId) {
+          enrichedShelter = sheltersData.find(s => s.id === enrichedBed.shelterId);
+        }
+        
+        // Buscar servicio (desde la cama o shelter)
+        let enrichedService = reservation.service;
+        if (!enrichedService && enrichedBed?.serviceId) {
+          enrichedService = servicesData.find(s => s.id === enrichedBed.serviceId);
+        }
+
+        return {
+          ...reservation,
+          enrichedUser,
+          enrichedBed,
+          enrichedShelter,
+          enrichedService
+        };
+      });
+
+      console.log('Reservas enriquecidas:', enrichedReservations);
+      setReservations(enrichedReservations);
     } catch (error: any) {
       console.error('Error al cargar reservas:', error);
       toast.error(error.message || 'Error al cargar las reservas');
-    }
-  };
-
-  const loadServices = async () => {
-    try {
-      const data = await getAllServices();
-      setServices(data);
-    } catch (error) {
-      console.error('Error al cargar servicios:', error);
-    }
-  };
-
-  const loadShelters = async () => {
-    try {
-      const data = await getAllShelters();
-      setShelters(data);
-    } catch (error) {
-      console.error('Error al cargar refugios:', error);
     }
   };
 
@@ -98,7 +139,7 @@ export function ReservationsManagement() {
     try {
       await updateReservationStatus(reservationId, newStatus);
       toast.success('Estado actualizado correctamente');
-      await loadReservations();
+      await loadAndEnrichReservations(users, beds, services, shelters);
     } catch (error: any) {
       console.error('Error al actualizar estado:', error);
       toast.error(error.message || 'Error al actualizar el estado');
@@ -113,11 +154,38 @@ export function ReservationsManagement() {
     try {
       await deleteReservation(id);
       toast.success('Reserva eliminada exitosamente');
-      await loadReservations();
+      await loadAndEnrichReservations(users, beds, services, shelters);
     } catch (error: any) {
       console.error('Error al eliminar reserva:', error);
       toast.error(error.message || 'Error al eliminar la reserva');
     }
+  };
+
+  // Funciones helper mejoradas
+  const getUserName = (reservation: EnrichedReservation) => {
+    return reservation.enrichedUser?.name || 
+           reservation.user?.name || 
+           'Usuario desconocido';
+  };
+
+  const getUserEmail = (reservation: EnrichedReservation) => {
+    return reservation.enrichedUser?.email || 
+           reservation.user?.email || 
+           '';
+  };
+
+  const getBedNumber = (reservation: EnrichedReservation) => {
+    const bedNumber = reservation.enrichedBed?.bedNumber || 
+                     reservation.bed?.bedNumber;
+    return bedNumber ? `Cama ${bedNumber}` : 'Sin asignar';
+  };
+
+  const getServiceName = (reservation: EnrichedReservation) => {
+    return reservation.enrichedService?.name || 
+           reservation.service?.name || 
+           reservation.enrichedShelter?.name ||
+           reservation.shelter?.name || 
+           'No especificado';
   };
 
   // Aplicar filtros
@@ -232,8 +300,8 @@ export function ReservationsManagement() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-10">
-              <p className="text-muted-foreground">Cargando reservas...</p>
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-cyan-500" />
             </div>
           ) : filteredReservations.length === 0 ? (
             <div className="text-center py-10">
@@ -244,14 +312,14 @@ export function ReservationsManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Peregrino</TableHead>
-                    <TableHead>Recurso</TableHead>
-                    <TableHead>Servicio</TableHead>
-                    <TableHead>Fechas</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Confirmación</TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead className="w-[80px]">ID</TableHead>
+                    <TableHead className="min-w-[180px]">Peregrino</TableHead>
+                    <TableHead className="min-w-[120px]">Recurso</TableHead>
+                    <TableHead className="min-w-[150px]">Servicio/Refugio</TableHead>
+                    <TableHead className="min-w-[180px]">Fechas</TableHead>
+                    <TableHead className="min-w-[120px]">Estado</TableHead>
+                    <TableHead className="min-w-[140px]">Confirmación</TableHead>
+                    <TableHead className="min-w-[120px]">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -261,23 +329,31 @@ export function ReservationsManagement() {
                         #{reservation.id}
                       </TableCell>
                       <TableCell>
-                        <div>
-                          <p className="font-medium">{reservation.user?.name || 'N/A'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {reservation.user?.email}
-                          </p>
+                        <div className="min-w-[160px]">
+                          <p className="font-medium">{getUserName(reservation)}</p>
+                          {getUserEmail(reservation) && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {getUserEmail(reservation)}
+                            </p>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        {reservation.bed?.bedNumber || 'N/A'}
+                        <span className="text-sm font-medium">{getBedNumber(reservation)}</span>
                       </TableCell>
                       <TableCell>
-                        {reservation.service?.name || reservation.shelter?.name || 'N/A'}
+                        <span className="text-sm">{getServiceName(reservation)}</span>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm">
-                          <p>Entrada: {formatReservationDate(reservation.checkInDate)}</p>
-                          <p>Salida: {formatReservationDate(reservation.checkOutDate)}</p>
+                        <div className="text-sm space-y-1">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground w-12">Entrada:</span>
+                            <span className="font-medium">{formatReservationDate(reservation.checkInDate)}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground w-12">Salida:</span>
+                            <span className="font-medium">{formatReservationDate(reservation.checkOutDate)}</span>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -288,17 +364,21 @@ export function ReservationsManagement() {
                       <TableCell>
                         {reservation.status === 'confirmed' && reservation.confirmationCode ? (
                           <div className="flex items-center gap-2">
-                            <QrCode className="h-4 w-4 text-green-600" />
-                            <span className="text-xs">{reservation.confirmationCode}</span>
+                            <QrCode className="h-4 w-4 text-green-600 flex-shrink-0" />
+                            <span className="text-xs font-mono">{reservation.confirmationCode}</span>
                           </div>
                         ) : reservation.status === 'pending' ? (
                           <div className="flex items-center gap-2 text-yellow-600">
-                            <Clock className="h-4 w-4" />
+                            <Clock className="h-4 w-4 flex-shrink-0" />
                             <span className="text-xs">Pendiente</span>
                           </div>
                         ) : reservation.status === 'cancelled' ? (
-                          <span className="text-xs text-red-600">Manual</span>
-                        ) : null}
+                          <span className="text-xs text-red-600">Cancelada</span>
+                        ) : reservation.status === 'completed' ? (
+                          <span className="text-xs text-blue-600">Completada</span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-1">
@@ -306,7 +386,8 @@ export function ReservationsManagement() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              title="Confirmar"
+                              className="h-8 w-8"
+                              title="Confirmar reserva"
                               onClick={() => handleStatusChange(reservation.id, 'confirmed')}
                             >
                               <Check className="h-4 w-4 text-green-600" />
@@ -316,7 +397,8 @@ export function ReservationsManagement() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              title="Cancelar"
+                              className="h-8 w-8"
+                              title="Cancelar reserva"
                               onClick={() => handleStatusChange(reservation.id, 'cancelled')}
                             >
                               <X className="h-4 w-4 text-red-600" />
@@ -326,9 +408,10 @@ export function ReservationsManagement() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              title="Ver QR"
+                              className="h-8 w-8"
+                              title="Ver código QR"
                             >
-                              <QrCode className="h-4 w-4" />
+                              <QrCode className="h-4 w-4 text-cyan-600" />
                             </Button>
                           )}
                         </div>

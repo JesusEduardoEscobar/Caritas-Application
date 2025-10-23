@@ -443,11 +443,11 @@ export function UserManagement() {
 
       {/* BOTONES PRINCIPALES */}
       <div className="flex gap-4 mb-4">
-        <Button onClick={() => {setShowUserForm(!showUserForm);
+        {/* <Button onClick={() => {setShowUserForm(!showUserForm);
                                setShowAdminForm(false);
                                setShowRegisterUserForm(false)} }>
           Completar Registro Usuario
-        </Button>
+        </Button> */}
         <Button onClick={() => {setShowAdminForm(!showAdminForm);
                                 setShowUserForm(false);
                                 setShowRegisterUserForm(false)}}>
@@ -461,7 +461,7 @@ export function UserManagement() {
       </div>
 
       {/* FORMULARIO COMPLETAR USUARIO */}
-      {showUserForm && (
+      {/* showUserForm && (
         <Card className="border-2">
           <CardHeader>
             <CardTitle>Completar Registro de Usuario</CardTitle>
@@ -500,7 +500,7 @@ export function UserManagement() {
                 </Button>
               </div>
 
-              {/* Mostrar información del usuario encontrado */}
+              {/* Mostrar información del usuario encontrado 
               {numero && (
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 space-y-2">
                   <p className="text-sm font-medium text-blue-900">✓ Usuario encontrado</p>
@@ -584,7 +584,7 @@ export function UserManagement() {
             </div>
           </CardContent>
         </Card>
-      )}
+      )}  */}
 
       {/* FORMULARIO EDITAR USUARIO */}
       {showEditForm && (

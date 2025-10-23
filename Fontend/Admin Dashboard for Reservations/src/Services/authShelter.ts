@@ -1,39 +1,57 @@
-import { API_URL } from './authLogin';
 import axios from 'axios';
-import type { Shelter, ShelterCreateDto, ShelterUpdateDto } from '../types/models.ts';
+import { API_URL } from './authLogin'
+import type { Shelter } from '../types/models';
+// ==================== INTERFACES ====================
 
-const token = localStorage.getItem('token');
+
+export interface ShelterCreateDto {
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  phone: string;
+  capacity: number;
+  description?: string;
+}
+
+export interface ShelterUpdateDto {
+  id: number;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  phone: string;
+  capacity: number;
+  description?: string;
+}
+
+// ==================== OBTENER TODOS LOS REFUGIOS ====================
 
 export const getAllShelters = async (): Promise<Shelter[]> => {
   try {
     const response = await axios.get(`${API_URL}/Shelters`, {
       headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      }
     });
 
-    const data = response.data.data;
-
-    // Asegúrate de que sea un arreglo
-    if (Array.isArray(data)) {
-      return data as Shelter[];
-    } else if (data) {
-      // Si la API devolviera un solo objeto
-      return [data as Shelter];
+    if (response.data.ok) {
+      const data = response.data.data;
+      return Array.isArray(data) ? data : [data];
     } else {
-      return [] as Shelter[];
+      throw new Error(response.data.message || 'Error al obtener refugios');
     }
-
-  } catch (error) {
-    console.error('Error al obtener refugios:', error);
-    return [] as Shelter[];
+  } catch (error: any) {
+    console.error('Error al obtener refugios:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al obtener los refugios');
   }
 };
 
+// ==================== OBTENER UN REFUGIO POR ID ====================
 
 export const getShelterById = async (id: number): Promise<Shelter> => {
   try {
-    const response = await axios.get(`${API_URL}/Shelter/${id}`, {
+    const response = await axios.get(`${API_URL}/Shelters/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`
       }
@@ -54,7 +72,20 @@ export const getShelterById = async (id: number): Promise<Shelter> => {
 
 export const createShelter = async (shelterData: ShelterCreateDto): Promise<Shelter> => {
   try {
-    const response = await axios.post(`${API_URL}/Shelter`, shelterData, {
+    // Asegurar que los datos numéricos sean números
+    const payload = {
+      name: shelterData.name.trim(),
+      address: shelterData.address.trim(),
+      latitude: Number(shelterData.latitude),
+      longitude: Number(shelterData.longitude),
+      phone: shelterData.phone.trim(),
+      capacity: Number(shelterData.capacity),
+      description: shelterData.description?.trim() || ''
+    };
+
+    console.log('Enviando datos al backend:', payload); // Debug
+
+    const response = await axios.post(`${API_URL}/Shelters`, payload, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         'Content-Type': 'application/json'
@@ -68,7 +99,14 @@ export const createShelter = async (shelterData: ShelterCreateDto): Promise<Shel
     }
   } catch (error: any) {
     console.error('Error al crear refugio:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Error al crear el refugio');
+    
+    // Mostrar errores de validación del backend
+    if (error.response?.data?.errors) {
+      const errors = Object.values(error.response.data.errors).flat();
+      throw new Error(errors.join(', '));
+    }
+    
+    throw new Error(error.response?.data?.message || error.response?.data?.title || 'Error al crear el refugio');
   }
 };
 
@@ -76,7 +114,21 @@ export const createShelter = async (shelterData: ShelterCreateDto): Promise<Shel
 
 export const updateShelter = async (shelterData: ShelterUpdateDto): Promise<Shelter> => {
   try {
-    const response = await axios.put(`${API_URL}/Shelter`, shelterData, {
+    // Asegurar que los datos numéricos sean números
+    const payload = {
+      id: Number(shelterData.id),
+      name: shelterData.name.trim(),
+      address: shelterData.address.trim(),
+      latitude: Number(shelterData.latitude),
+      longitude: Number(shelterData.longitude),
+      phone: shelterData.phone.trim(),
+      capacity: Number(shelterData.capacity),
+      description: shelterData.description?.trim() || ''
+    };
+
+    console.log('Actualizando refugio:', payload); // Debug
+
+    const response = await axios.put(`${API_URL}/Shelters`, payload, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         'Content-Type': 'application/json'
@@ -90,7 +142,14 @@ export const updateShelter = async (shelterData: ShelterUpdateDto): Promise<Shel
     }
   } catch (error: any) {
     console.error('Error al actualizar refugio:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Error al actualizar el refugio');
+    
+    // Mostrar errores de validación del backend
+    if (error.response?.data?.errors) {
+      const errors = Object.values(error.response.data.errors).flat();
+      throw new Error(errors.join(', '));
+    }
+    
+    throw new Error(error.response?.data?.message || error.response?.data?.title || 'Error al actualizar el refugio');
   }
 };
 
@@ -98,7 +157,7 @@ export const updateShelter = async (shelterData: ShelterUpdateDto): Promise<Shel
 
 export const deleteShelter = async (id: number): Promise<void> => {
   try {
-    const response = await axios.delete(`${API_URL}/Shelter/${id}`, {
+    const response = await axios.delete(`${API_URL}/Shelters/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`
       }
