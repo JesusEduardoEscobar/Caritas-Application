@@ -70,7 +70,7 @@ export const createService = async (serviceData: ServiceCreateDto): Promise<Serv
 
 export const updateService = async (serviceData: ServiceUpdateDto): Promise<Service> => {
   try {
-    const response = await axios.put(`${API_URL}/Service`, serviceData, {
+    const response = await axios.put(`${API_URL}/Services`, serviceData, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         'Content-Type': 'application/json'

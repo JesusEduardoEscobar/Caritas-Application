@@ -7,14 +7,15 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
 import { 
   Users, Bed, Calendar, CheckCircle, AlertCircle, Shield, UserCheck, 
-  Home, Loader2, MapPin, Phone, Package, Plus
+  Home, Loader2, MapPin, Phone, Package, Plus, Pencil, Trash2
 } from 'lucide-react';
 import { getUsers } from '../Services/authUser';
 import { getBeds } from '../Services/authBeds';
-import { getAllShelters, createShelter, validateShelterData } from '../Services/authShelter';
-import { getAllServices, createService, validateServiceData, availableIcons } from '../Services/authServices';
+import { getAllShelters, createShelter, updateShelter, deleteShelter, validateShelterData } from '../Services/authShelter';
+import { getAllServices, createService, updateService, deleteService, validateServiceData, availableIcons } from '../Services/authServices';
 import { toast } from 'sonner';
 import * as LucideIcons from 'lucide-react';
 import { Textarea } from "./ui/textarea";
@@ -44,7 +45,18 @@ export function DashboardStats() {
   // Estados para diálogos
   const [isCreateShelterOpen, setIsCreateShelterOpen] = useState(false);
   const [isCreateServiceOpen, setIsCreateServiceOpen] = useState(false);
+  const [isEditShelterOpen, setIsEditShelterOpen] = useState(false);
+  const [isEditServiceOpen, setIsEditServiceOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Estados para edición
+  const [editingShelter, setEditingShelter] = useState<any>(null);
+  const [editingService, setEditingService] = useState<any>(null);
+
+  // Estados para confirmación de eliminación
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ type: 'shelter' | 'service', id: number, name: string } | null>(null);
 
   // Estados para formularios
   const [newShelter, setNewShelter] = useState({
@@ -119,11 +131,8 @@ export function DashboardStats() {
       }
       setShelterBedStats(statsByShelter);
 
-      // Calcular estadísticas por servicio basado en camas reales
-      // Agrupar camas por shelter y contar las que están ocupadas
+      // Calcular estadísticas por servicio
       const statsPerService: ServiceStats[] = servicesData.map((service: any) => {
-        // Por ahora, asumimos que todos los shelters ofrecen todos los servicios
-        // Si tienes una relación específica entre servicios y shelters, ajusta esto
         const totalBeds = bedsData.length;
         const availableBeds = bedsData.filter((bed: any) => bed.isAvailable).length;
         const occupiedBeds = totalBeds - availableBeds;
@@ -138,8 +147,6 @@ export function DashboardStats() {
       });
 
       setServiceStats(statsPerService);
-
-      // Actualizar stats globales
       stats.totalBeds = bedsData.length;
       stats.occupiedBeds = bedsData.filter((bed: any) => !bed.isAvailable).length;
 
@@ -159,8 +166,8 @@ export function DashboardStats() {
     return Icon || Package;
   };
 
+  // ==================== CREAR REFUGIO ====================
   const handleCreateShelter = async () => {
-    // Validar datos
     const errors = validateShelterData({
       name: newShelter.name,
       address: newShelter.address,
@@ -197,7 +204,6 @@ export function DashboardStats() {
         capacity: ''
       });
       
-      // Recargar datos
       loadSheltersAndServices();
     } catch (error: any) {
       toast.error(error.message || 'Error al crear el refugio');
@@ -206,8 +212,62 @@ export function DashboardStats() {
     }
   };
 
+  // ==================== EDITAR REFUGIO ====================
+  const handleEditShelter = (shelter: any) => {
+    setEditingShelter({
+      id: shelter.id,
+      name: shelter.name,
+      address: shelter.address,
+      latitude: shelter.latitude.toString(),
+      longitude: shelter.longitude.toString(),
+      phone: shelter.phone,
+      capacity: shelter.capacity.toString()
+    });
+    setIsEditShelterOpen(true);
+  };
+
+  const handleUpdateShelter = async () => {
+    if (!editingShelter) return;
+
+    const errors = validateShelterData({
+      name: editingShelter.name,
+      address: editingShelter.address,
+      latitude: parseFloat(editingShelter.latitude),
+      longitude: parseFloat(editingShelter.longitude),
+      phone: editingShelter.phone,
+      capacity: parseInt(editingShelter.capacity)
+    });
+
+    if (errors.length > 0) {
+      errors.forEach(error => toast.error(error));
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      await updateShelter({
+        id: editingShelter.id,
+        name: editingShelter.name,
+        address: editingShelter.address,
+        latitude: parseFloat(editingShelter.latitude),
+        longitude: parseFloat(editingShelter.longitude),
+        phone: editingShelter.phone,
+        capacity: parseInt(editingShelter.capacity)
+      });
+
+      toast.success('Refugio actualizado correctamente');
+      setIsEditShelterOpen(false);
+      setEditingShelter(null);
+      loadSheltersAndServices();
+    } catch (error: any) {
+      toast.error(error.message || 'Error al actualizar el refugio');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  // ==================== CREAR SERVICIO ====================
   const handleCreateService = async () => {
-    // Validar datos
     const errors = validateServiceData({
       name: newService.name,
       description: newService.description,
@@ -235,12 +295,85 @@ export function DashboardStats() {
         iconKey: ''
       });
       
-      // Recargar datos
       loadSheltersAndServices();
     } catch (error: any) {
       toast.error(error.message || 'Error al crear el servicio');
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  // ==================== EDITAR SERVICIO ====================
+  const handleEditService = (service: any) => {
+    setEditingService({
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      iconKey: service.iconKey
+    });
+    setIsEditServiceOpen(true);
+  };
+
+  const handleUpdateService = async () => {
+    if (!editingService) return;
+
+    const errors = validateServiceData({
+      name: editingService.name,
+      description: editingService.description,
+      iconKey: editingService.iconKey
+    });
+
+    if (errors.length > 0) {
+      errors.forEach(error => toast.error(error));
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      await updateService({
+        id: editingService.id,
+        name: editingService.name,
+        description: editingService.description,
+        iconKey: editingService.iconKey
+      });
+
+      toast.success('Servicio actualizado correctamente');
+      setIsEditServiceOpen(false);
+      setEditingService(null);
+      loadSheltersAndServices();
+    } catch (error: any) {
+      toast.error(error.message || 'Error al actualizar el servicio');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  // ==================== ELIMINAR ====================
+  const handleDeleteClick = (type: 'shelter' | 'service', id: number, name: string) => {
+    setItemToDelete({ type, id, name });
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      if (itemToDelete.type === 'shelter') {
+        await deleteShelter(itemToDelete.id);
+        toast.success('Refugio eliminado correctamente');
+      } else {
+        await deleteService(itemToDelete.id);
+        toast.success('Servicio eliminado correctamente');
+      }
+      
+      setDeleteConfirmOpen(false);
+      setItemToDelete(null);
+      loadSheltersAndServices();
+    } catch (error: any) {
+      toast.error(error.message || 'Error al eliminar');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -256,6 +389,7 @@ export function DashboardStats() {
 
   return (
     <div className="space-y-7">
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         <Card className="border-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
@@ -322,7 +456,7 @@ export function DashboardStats() {
         </Card>
       </div>
 
-      {/* Cards de Refugios */}
+      {/* Refugios */}
       <Card className="border-2">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -448,26 +582,46 @@ export function DashboardStats() {
                 return (
                   <Card key={shelter.id} className="border">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-lg flex items-start justify-between">
-                        <span className="line-clamp-1">{shelter.name}</span>
-                        {shelterStats.available === 0 ? (
-                          <Badge variant="destructive" className="ml-2">Lleno</Badge>
-                        ) : shelterStats.available <= 3 ? (
-                          <Badge variant="secondary" className="ml-2">Poco espacio</Badge>
-                        ) : (
-                          <Badge className="ml-2" style={{ backgroundColor: '#06b6d4', color: 'white' }}>
-                            Disponible
-                          </Badge>
-                        )}
-                      </CardTitle>
+                      <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="text-lg line-clamp-1 flex-1">
+                          {shelter.name}
+                        </CardTitle>
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleEditShelter(shelter)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteClick('shelter', shelter.id, shelter.name)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      {shelterStats.available === 0 ? (
+                        <Badge variant="destructive">Lleno</Badge>
+                      ) : shelterStats.available <= 3 ? (
+                        <Badge variant="secondary">Poco espacio</Badge>
+                      ) : (
+                        <Badge style={{ backgroundColor: '#06b6d4', color: 'white' }}>
+                          Disponible
+                        </Badge>
+                      )}
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
+                        <MapPin className="h-4 w-4 flex-shrink-0" />
                         <span className="line-clamp-1">{shelter.address}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Phone className="h-4 w-4" />
+                        <Phone className="h-4 w-4 flex-shrink-0" />
                         <span>{shelter.phone}</span>
                       </div>
                       
@@ -506,7 +660,108 @@ export function DashboardStats() {
         </CardContent>
       </Card>
 
-      {/* Cards de Servicios Globales */}
+      {/* Diálogo Editar Refugio */}
+      <Dialog open={isEditShelterOpen} onOpenChange={setIsEditShelterOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Refugio</DialogTitle>
+          </DialogHeader>
+          {editingShelter && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Nombre del Refugio *</Label>
+                <Input
+                  placeholder="Ej: Refugio San Juan"
+                  value={editingShelter.name}
+                  onChange={(e) => setEditingShelter({...editingShelter, name: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Dirección *</Label>
+                <Textarea
+                  placeholder="Dirección completa del refugio"
+                  value={editingShelter.address}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                      setEditingShelter({ ...editingShelter, address: e.target.value })
+                    }
+                    rows={2}
+                  />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Latitud *</Label>
+                  <Input
+                    type="number"
+                    step="0.000001"
+                    placeholder="Ej: 25.686613"
+                    value={editingShelter.latitude}
+                    onChange={(e) => setEditingShelter({...editingShelter, latitude: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Longitud *</Label>
+                  <Input
+                    type="number"
+                    step="0.000001"
+                    placeholder="Ej: -100.316116"
+                    value={editingShelter.longitude}
+                    onChange={(e) => setEditingShelter({...editingShelter, longitude: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Teléfono *</Label>
+                <Input
+                  placeholder="Ej: 81-1234-5678"
+                  value={editingShelter.phone}
+                  onChange={(e) => setEditingShelter({...editingShelter, phone: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Capacidad (personas) *</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="Ej: 50"
+                  value={editingShelter.capacity}
+                  onChange={(e) => setEditingShelter({...editingShelter, capacity: e.target.value})}
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  className="flex-1" 
+                  onClick={handleUpdateShelter}
+                  disabled={isCreating}
+                >
+                  {isCreating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Actualizando...
+                    </>
+                  ) : (
+                    'Actualizar Refugio'
+                  )}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditShelterOpen(false)}
+                  className="flex-1"
+                  disabled={isCreating}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Servicios */}
       <Card className="border-2">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -630,7 +885,25 @@ export function DashboardStats() {
                 const IconComponent = getIconComponent(service.iconKey);
                 
                 return (
-                  <Card key={service.id} className="border hover:border-cyan-500 transition-colors">
+                  <Card key={service.id} className="border hover:border-cyan-500 transition-colors relative group">
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 bg-background shadow-sm"
+                        onClick={() => handleEditService(service)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive bg-background shadow-sm"
+                        onClick={() => handleDeleteClick('service', service.id, service.name)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <CardContent className="pt-6">
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="p-3 rounded-full bg-cyan-50">
@@ -650,7 +923,140 @@ export function DashboardStats() {
         </CardContent>
       </Card>
 
-      {/* Uso de Servicios con datos reales */}
+      {/* Diálogo Editar Servicio */}
+      <Dialog open={isEditServiceOpen} onOpenChange={setIsEditServiceOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Servicio</DialogTitle>
+          </DialogHeader>
+          {editingService && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Nombre del Servicio *</Label>
+                <Input
+                  placeholder="Ej: Hospedaje, Comida, Lavandería"
+                  value={editingService.name}
+                  onChange={(e) => setEditingService({...editingService, name: e.target.value})}
+                  maxLength={100}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Descripción *</Label>
+                <Textarea
+                  placeholder="Describe el servicio que se ofrece"
+                  value={editingService.description}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditingService({...editingService, description: e.target.value})}
+                  rows={3}
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {editingService.description.length}/500 caracteres
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Icono *</Label>
+                <Select value={editingService.iconKey} onValueChange={(v: string) => setEditingService({...editingService, iconKey: v})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar icono" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {availableIcons.map(icon => {
+                      const IconComponent = getIconComponent(icon.key);
+                      return (
+                        <SelectItem key={icon.key} value={icon.key}>
+                          <div className="flex items-center gap-2">
+                            <IconComponent className="h-4 w-4" />
+                            <span>{icon.label}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {editingService.iconKey && (
+                <div className="p-4 border rounded-lg bg-muted/50">
+                  <p className="text-sm text-muted-foreground mb-2">Vista previa:</p>
+                  <div className="flex items-center gap-3">
+                    {(() => {
+                      const IconComponent = getIconComponent(editingService.iconKey);
+                      return <IconComponent className="h-8 w-8" style={{ color: '#06b6d4' }} />;
+                    })()}
+                    <div>
+                      <p className="font-medium">{editingService.name || 'Nombre del servicio'}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {editingService.description || 'Descripción del servicio'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  className="flex-1" 
+                  onClick={handleUpdateService}
+                  disabled={isCreating}
+                >
+                  {isCreating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Actualizando...
+                    </>
+                  ) : (
+                    'Actualizar Servicio'
+                  )}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditServiceOpen(false)}
+                  className="flex-1"
+                  disabled={isCreating}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de Confirmación de Eliminación */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Esto eliminará permanentemente{' '}
+              {itemToDelete?.type === 'shelter' ? 'el refugio' : 'el servicio'}{' '}
+              <strong>{itemToDelete?.name}</strong>
+              {itemToDelete?.type === 'shelter' && ' y todos sus datos asociados'}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                'Eliminar'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Uso de Servicios */}
       <Card className="border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

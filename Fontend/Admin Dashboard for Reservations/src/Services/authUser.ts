@@ -85,20 +85,27 @@ export const updateUser = async (id: number, data: any) => {
 
 // Función auxiliar para filtrar usuarios localmente después de obtenerlos
 export const filterUsers = (users: User[], filters: UserFilters): User[] => {
-    if (!Array.isArray(users)) {
-        console.warn('users no es un array:', users);
-        return [];
-    }
-    return users.filter(user => {
+  if (!Array.isArray(users)) {
+    console.warn('users no es un array:', users);
+    return [];
+  }
+
+  return users.filter(user => {
     if (filters.role && user.role !== filters.role) return false;
+
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
+      const name = user.name?.toLowerCase() || "";
+      const email = user.email?.toLowerCase() || "";
+      const phone = user.phone?.toLowerCase() || "";
+
       return (
-        user.name.toLowerCase().includes(searchLower) ||
-        user.email.toLowerCase().includes(searchLower) ||
-        (user.phone && user.phone.toLowerCase().includes(searchLower))
+        name.includes(searchLower) ||
+        email.includes(searchLower) ||
+        phone.includes(searchLower)
       );
     }
+
     return true;
   });
 };

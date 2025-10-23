@@ -67,7 +67,7 @@ export interface ReservationFilters {
 
 export const getAllReservations = async (): Promise<Reservation[]> => {
   try {
-    const response = await axios.get(`${API_URL}/Reservation`, {
+    const response = await axios.get(`${API_URL}/Reservations`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`
       }
@@ -88,7 +88,7 @@ export const getAllReservations = async (): Promise<Reservation[]> => {
 
 export const getReservationsByShelter = async (shelterId: number): Promise<Reservation[]> => {
   try {
-    const response = await axios.get(`${API_URL}/Reservation/shelter/${shelterId}`, {
+    const response = await axios.get(`${API_URL}/Reservations/shelter/${shelterId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`
       }
@@ -109,7 +109,7 @@ export const getReservationsByShelter = async (shelterId: number): Promise<Reser
 
 export const getReservationById = async (id: number): Promise<Reservation> => {
   try {
-    const response = await axios.get(`${API_URL}/Reservation/${id}`, {
+    const response = await axios.get(`${API_URL}/Reservations/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`
       }
@@ -130,7 +130,7 @@ export const getReservationById = async (id: number): Promise<Reservation> => {
 
 export const createReservation = async (reservationData: CreateReservationDto): Promise<Reservation> => {
   try {
-    const response = await axios.post(`${API_URL}/Reservation`, reservationData, {
+    const response = await axios.post(`${API_URL}/Reservations`, reservationData, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         'Content-Type': 'application/json'
@@ -152,7 +152,7 @@ export const createReservation = async (reservationData: CreateReservationDto): 
 
 export const updateReservation = async (reservationData: UpdateReservationDto): Promise<Reservation> => {
   try {
-    const response = await axios.put(`${API_URL}/Reservation`, reservationData, {
+    const response = await axios.put(`${API_URL}/Reservations`, reservationData, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         'Content-Type': 'application/json'
@@ -178,7 +178,7 @@ export const updateReservationStatus = async (
 ): Promise<Reservation> => {
   try {
     const response = await axios.patch(
-      `${API_URL}/Reservation/${id}/status`, 
+      `${API_URL}/Reservations/${id}/status`, 
       { status },
       {
         headers: {
@@ -203,7 +203,7 @@ export const updateReservationStatus = async (
 
 export const deleteReservation = async (id: number): Promise<void> => {
   try {
-    const response = await axios.delete(`${API_URL}/Reservation/${id}`, {
+    const response = await axios.delete(`${API_URL}/Reservations/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`
       }
