@@ -139,7 +139,7 @@ export interface ShelterUpdateDto {
 export interface Reservation {
   id: number;
   user_id: number;
-  shelter_id: number;
+  bed_id: number;
   resource_id: number;
   start_date: string;
   end_date: string;
@@ -149,7 +149,7 @@ export interface Reservation {
   updated_at: string;
 }
 
-export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+export type ReservationStatus = 'reserved' | 'checked_in' | 'completed' | 'canceled';
 
 export interface ReservationCreateDTO {
   user_id: number;

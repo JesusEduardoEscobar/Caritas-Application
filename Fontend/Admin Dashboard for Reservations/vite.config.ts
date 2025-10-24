@@ -54,6 +54,7 @@
       outDir: 'build',
     },
     server: {
+      host: true, // hosts for the private web
       port: 3000,
       open: true,
     },
