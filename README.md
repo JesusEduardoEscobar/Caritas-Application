@@ -68,7 +68,7 @@ El proyecto está dividido en dos partes principales: un backend en C# (.NET) y 
 
 ### Requisitos previos
 
-- [.NET SDK](https://dotnet.microsoft.com/) (versión 6 o superior)  
+- [.NET SDK](https://dotnet.microsoft.com/) (versión 8 o superior)  
 - [Node.js](https://nodejs.org/) (versión LTS recomendada)  
 - Git
 
